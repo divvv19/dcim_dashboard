@@ -1,16 +1,41 @@
-# React + Vite
+# DCIM Dashboard (Data Center Infrastructure Management)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, high-fidelity dashboard for monitoring and managing data center infrastructure. Built with React and Tailwind CSS, featuring a "Dark Glass" aesthetic.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+-   **Real-Time Monitoring**: Live data simulation for Cooling, UPS Power, and Environmental metrics.
+-   **Interactive Visuals**:
+    -   **Cooling**: Schematic view of cooling units and efficiency gauges.
+    -   **UPS**: Power flow diagrams and battery status.
+    -   **Environment**: Gauge cluster for Temperature, Humidity, and Airflow.
+-   **Alarm System**: Full-screen visual warning system for Fire Alarms with interactive controls.
+-   **Modern UI**: Fully responsive design with glassmorphism effects and smooth animations.
 
-## React Compiler
+## 🛠️ Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+-   **Frontend**: React (Vite)
+-   **Styling**: Tailwind CSS
+-   **Icons**: Lucide React
 
-## Expanding the ESLint configuration
+## 📦 Installation & Setup
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/divvv19/dcim_dashboard.git
+    cd dcim_dashboard
+    ```
+
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
+
+3.  **Run the development server**
+    ```bash
+    npm run dev
+    ```
+
+## 📸 Screenshots
+
+*(Add screenshots of your dashboard here)*
