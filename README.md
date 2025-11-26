@@ -36,6 +36,4 @@ A modern, high-fidelity dashboard for monitoring and managing data center infras
     npm run dev
     ```
 
-## 📸 Screenshots
 
-*(Add screenshots of your dashboard here)*
