@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Thermometer, Wind, Zap, Droplets, DoorOpen, AlertTriangle,
     Activity, Server, Fan, Battery, Plug, Flame, Settings,
-    Clock, CheckCircle2, ArrowRight, Home
+    Clock, CheckCircle2, ArrowRight, Home, Menu
 } from 'lucide-react';
 
 // --- COMPONENT LIBRARY ---
@@ -325,6 +325,7 @@ export default function DCIM_Preview() {
     const [activeTab, setActiveTab] = useState('home');
     const [showSim, setShowSim] = useState(false);
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     // Mock State
     const [coolingData, setCoolingData] = useState({ supplyTemp: 18.5, returnTemp: 24.2, compressorStatus: true, fanStatus: true, compressorRuntime: 1450, highRoomTemp: false });
@@ -387,7 +388,7 @@ export default function DCIM_Preview() {
         <div className={`min-h-screen transition-colors duration-500 font-sans text-slate-200 overflow-hidden flex ${envData.fireStatus === 'Alarm' ? 'bg-red-950' : 'bg-[#0b1120]'}`}>
 
             {/* Sidebar */}
-            <div className="w-64 z-20 flex flex-col border-r backdrop-blur-md bg-slate-900/80 border-slate-800">
+            <div className={`${isSidebarOpen ? 'w-64 border-r' : 'w-0 border-r-0'} transition-all duration-300 overflow-hidden z-20 flex flex-col backdrop-blur-md bg-slate-900/80 border-slate-800`}>
                 <div className="p-6 flex items-center gap-3">
                     <div className="w-8 h-8 rounded bg-linear-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20"><Server className="text-white" size={18} /></div>
                     <h1 className="text-xl font-bold tracking-tight text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]">DCIM</h1>
@@ -417,7 +418,12 @@ export default function DCIM_Preview() {
             <main className="flex-1 relative z-10 flex flex-col h-screen overflow-hidden">
                 {/* Header */}
                 <header className="h-16 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between px-8">
-                    <h2 className="text-lg font-medium text-slate-200 uppercase tracking-widest">{activeTab}</h2>
+                    <div className="flex items-center gap-4">
+                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-slate-400 hover:text-cyan-400 transition-colors">
+                            <Menu size={24} />
+                        </button>
+                        <h2 className="text-lg font-medium text-slate-200 uppercase tracking-widest">{activeTab}</h2>
+                    </div>
                     <div className="flex items-center gap-4">
                         <button onClick={() => setShowSim(!showSim)} className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors"><Settings size={14} /> Simulator</button>
                         <div className="flex items-center gap-2">
