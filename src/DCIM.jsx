@@ -319,6 +319,29 @@ const EnvironmentView = ({ data }) => (
     </div>
 );
 
+const PDUView = ({ data }) => (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full content-start">
+        {['pdu1', 'pdu2'].map((pduKey, idx) => (
+            <Card key={pduKey} title={`PDU-${idx + 1} Status`}>
+                <div className="space-y-4">
+                    <div className="flex items-center justify-center py-6">
+                        <div className={`w-24 h-24 rounded-full border-4 ${idx === 0 ? 'border-cyan-500' : 'border-blue-500'} flex items-center justify-center bg-slate-900/50 shadow-[0_0_20px_rgba(0,0,0,0.3)]`}>
+                            <Plug size={40} className={idx === 0 ? "text-cyan-400" : "text-blue-400"} />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <ValueDisplay label="Voltage" value={data[pduKey].voltage} unit="V" icon={Zap} color={idx === 0 ? "text-cyan-400" : "text-blue-400"} />
+                        <ValueDisplay label="Current" value={data[pduKey].current} unit="A" icon={Activity} color={idx === 0 ? "text-cyan-400" : "text-blue-400"} />
+                        <ValueDisplay label="Frequency" value={data[pduKey].frequency} unit="Hz" icon={Activity} color="text-slate-400" />
+                        <ValueDisplay label="Active Energy" value={data[pduKey].energy} unit="kWh" icon={Zap} color="text-green-400" />
+                        <ValueDisplay label="Power Factor" value={data[pduKey].powerFactor} unit="" icon={Activity} color="text-orange-400" />
+                    </div>
+                </div>
+            </Card>
+        ))}
+    </div>
+);
+
 // --- MAIN APP ---
 
 export default function DCIM_Preview() {
@@ -343,6 +366,10 @@ export default function DCIM_Preview() {
             temp: 22 + Math.random() * 2,
             hum: 45 + Math.random() * 5
         }))
+    });
+    const [pduData, setPduData] = useState({
+        pdu1: { voltage: 230.1, current: 12.5, frequency: 50.0, energy: 1450.2, powerFactor: 0.98 },
+        pdu2: { voltage: 229.8, current: 11.8, frequency: 50.0, energy: 1320.5, powerFactor: 0.97 }
     });
 
     // Clock
@@ -394,7 +421,7 @@ export default function DCIM_Preview() {
                     <h1 className="text-xl font-bold tracking-tight text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]">DCIM</h1>
                 </div>
                 <nav className="flex-1 px-4 py-4 space-y-2">
-                    {[{ id: 'home', label: 'Home', icon: Home }, { id: 'cooling', label: 'Cooling', icon: Fan }, { id: 'ups', label: 'UPS Power', icon: Zap }, { id: 'environment', label: 'Environment', icon: Droplets }].map(item => (
+                    {[{ id: 'home', label: 'Home', icon: Home }, { id: 'cooling', label: 'Cooling', icon: Fan }, { id: 'ups', label: 'UPS Power', icon: Zap }, { id: 'pdu', label: 'PDU', icon: Plug }, { id: 'environment', label: 'Environment', icon: Droplets }].map(item => (
                         <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === item.id ? 'bg-cyan-900/30 text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.2)]' : 'text-slate-400 hover:bg-slate-800'}`}>
                             <item.icon size={20} className={activeTab === item.id ? "drop-shadow-[0_0_5px_currentColor]" : ""} />{item.label}
                         </button>
@@ -445,6 +472,7 @@ export default function DCIM_Preview() {
                     {activeTab === 'home' && <HomeView coolingData={coolingData} upsData={upsData} envData={envData} />}
                     {activeTab === 'cooling' && <CoolingView data={coolingData} />}
                     {activeTab === 'ups' && <UPSView data={upsData} />}
+                    {activeTab === 'pdu' && <PDUView data={pduData} />}
                     {activeTab === 'environment' && <EnvironmentView data={envData} />}
                 </div>
             </main>
