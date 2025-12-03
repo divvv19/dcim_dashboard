@@ -474,6 +474,11 @@ export default function DCIM_Preview() {
                     {activeTab === 'ups' && <UPSView data={upsData} />}
                     {activeTab === 'pdu' && <PDUView data={pduData} />}
                     {activeTab === 'environment' && <EnvironmentView data={envData} />}
+
+                    <div className="mt-8 pt-6 border-t border-slate-800 flex justify-between items-center text-xs text-slate-500">
+                        <span>DCIM Dashboard v1.0.2</span>
+                        <span>© 2025 Data Center Systems</span>
+                    </div>
                 </div>
             </main>
 
