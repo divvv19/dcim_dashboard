@@ -411,6 +411,26 @@ export default function DCIM_Preview() {
     const toggleLeak = () => setEnvData(p => ({ ...p, leakageStatus: p.leakageStatus === 'Normal' ? 'Alarm' : 'Normal' }));
     const toggleUPS = () => setUpsData(p => ({ ...p, upsState: p.upsState === 'Mains' ? 'Battery' : 'Mains' }));
 
+    // Idle Timeout Logic
+    useEffect(() => {
+        let timeout;
+        const resetTimer = () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                setActiveTab('home');
+            }, 300000); // 5 minutes
+        };
+
+        const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+        events.forEach(event => window.addEventListener(event, resetTimer));
+        resetTimer();
+
+        return () => {
+            clearTimeout(timeout);
+            events.forEach(event => window.removeEventListener(event, resetTimer));
+        };
+    }, []);
+
     return (
         <div className={`min-h-screen transition-colors duration-500 font-sans text-slate-200 overflow-hidden flex ${envData.fireStatus === 'Alarm' ? 'bg-red-950' : 'bg-[#0b1120]'}`}>
 
