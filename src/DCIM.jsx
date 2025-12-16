@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Thermometer, Wind, Zap, Droplets, DoorOpen, AlertTriangle,
     Activity, Server, Fan, Battery, Plug, Flame, Settings,
-    Clock, CheckCircle2, ArrowRight, Home, Menu
+    Clock, CheckCircle2, ArrowRight, Home, Menu, Download
 } from 'lucide-react';
 
 // --- COMPONENT LIBRARY ---
@@ -411,6 +411,48 @@ export default function DCIM_Preview() {
     const toggleLeak = () => setEnvData(p => ({ ...p, leakageStatus: p.leakageStatus === 'Normal' ? 'Alarm' : 'Normal' }));
     const toggleUPS = () => setUpsData(p => ({ ...p, upsState: p.upsState === 'Mains' ? 'Battery' : 'Mains' }));
 
+    // Export Data Logic
+    const handleExport = () => {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const headers = ["Category", "Metric", "Value", "Unit"];
+        const rows = [
+            // Cooling
+            ["Cooling", "Supply Temp", coolingData.supplyTemp, "°C"],
+            ["Cooling", "Return Temp", coolingData.returnTemp, "°C"],
+            ["Cooling", "Compressor", coolingData.compressorStatus ? "ON" : "OFF", ""],
+            // UPS
+            ["UPS", "State", upsData.upsState, ""],
+            ["UPS", "Input Voltage", upsData.inputVoltage, "V"],
+            ["UPS", "Output Voltage", upsData.outputVoltage, "V"],
+            ["UPS", "Battery Voltage", upsData.batteryVoltage, "V"],
+            // PDU 1
+            ["PDU-1", "Voltage", pduData.pdu1.voltage, "V"],
+            ["PDU-1", "Current", pduData.pdu1.current, "A"],
+            ["PDU-1", "Energy", pduData.pdu1.energy, "kWh"],
+            // PDU 2
+            ["PDU-2", "Voltage", pduData.pdu2.voltage, "V"],
+            ["PDU-2", "Current", pduData.pdu2.current, "A"],
+            ["PDU-2", "Energy", pduData.pdu2.energy, "kWh"],
+            // Environment
+            ["Environment", "Cold Aisle Temp", envData.coldAisleTemp, "°C"],
+            ["Environment", "Hot Aisle Temp", envData.hotAisleTemp, "°C"],
+            ["Environment", "Fire Status", envData.fireStatus, ""],
+            ["Environment", "Leak Status", envData.leakageStatus, ""]
+        ];
+
+        const csvContent = "data:text/csv;charset=utf-8,"
+            + headers.join(",") + "\n"
+            + rows.map(e => e.join(",")).join("\n");
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `dcim-report-${timestamp}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     // Idle Timeout Logic
     useEffect(() => {
         let timeout;
@@ -472,6 +514,7 @@ export default function DCIM_Preview() {
                         <h2 className="text-lg font-medium text-slate-200 uppercase tracking-widest">{activeTab}</h2>
                     </div>
                     <div className="flex items-center gap-4">
+                        <button onClick={handleExport} className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors" title="Export Data"><Download size={14} /> Export</button>
                         <button onClick={() => setShowSim(!showSim)} className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors"><Settings size={14} /> Simulator</button>
                         <div className="flex items-center gap-2">
                             <span className={`w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] ${envData.fireStatus === 'Alarm' ? 'bg-red-500 animate-ping' : 'bg-green-500'}`}></span>
