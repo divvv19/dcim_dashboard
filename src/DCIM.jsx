@@ -414,6 +414,11 @@ export default function DCIM_Preview() {
     // Export Data Logic
     const handleExport = () => {
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        // Prompt for filename
+        let fileName = window.prompt("Enter file name for export:", `dcim-report-${timestamp}`);
+        if (!fileName) return; // User cancelled
+        if (!fileName.endsWith('.csv')) fileName += '.csv';
+
         const headers = ["Category", "Metric", "Value", "Unit"];
         const rows = [
             // Cooling
@@ -447,7 +452,7 @@ export default function DCIM_Preview() {
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `dcim-report-${timestamp}.csv`);
+        link.setAttribute("download", fileName);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
