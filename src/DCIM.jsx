@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Thermometer, Wind, Zap, Droplets, DoorOpen, AlertTriangle,
     Activity, Server, Fan, Battery, Plug, Flame, Settings,
-    Clock, CheckCircle2, ArrowRight, Home, Menu, Download
+    Clock, CheckCircle2, ArrowRight, Home, Menu, Download, Maximize, Minimize
 } from 'lucide-react';
 
 // --- COMPONENT LIBRARY ---
@@ -349,6 +349,7 @@ export default function DCIM_Preview() {
     const [showSim, setShowSim] = useState(false);
     const [currentTime, setCurrentTime] = useState(new Date());
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isFullscreen, setIsFullscreen] = useState(false);
 
     // Mock State
     const [coolingData, setCoolingData] = useState({ supplyTemp: 18.5, returnTemp: 24.2, compressorStatus: true, fanStatus: true, compressorRuntime: 1450, highRoomTemp: false });
@@ -478,6 +479,23 @@ export default function DCIM_Preview() {
         };
     }, []);
 
+    // Fullscreen Logic
+    const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().then(() => setIsFullscreen(true));
+        } else {
+            document.exitFullscreen().then(() => setIsFullscreen(false));
+        }
+    };
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    }, []);
+
     return (
         <div className={`min-h-screen transition-colors duration-500 font-sans text-slate-200 overflow-hidden flex ${envData.fireStatus === 'Alarm' ? 'bg-red-950' : 'bg-[#0b1120]'}`}>
 
@@ -519,6 +537,9 @@ export default function DCIM_Preview() {
                         <h2 className="text-lg font-medium text-slate-200 uppercase tracking-widest">{activeTab}</h2>
                     </div>
                     <div className="flex items-center gap-4">
+                        <button onClick={toggleFullscreen} className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors" title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}>
+                            {isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />} {isFullscreen ? 'Exit' : 'Full'}
+                        </button>
                         <button onClick={handleExport} className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors" title="Export Data"><Download size={14} /> Export</button>
                         <button onClick={() => setShowSim(!showSim)} className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors"><Settings size={14} /> Simulator</button>
                         <div className="flex items-center gap-2">
