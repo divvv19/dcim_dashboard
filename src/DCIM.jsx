@@ -482,9 +482,13 @@ export default function DCIM_Preview() {
     // Fullscreen Logic
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().then(() => setIsFullscreen(true));
+            document.documentElement.requestFullscreen().catch((err) => {
+                console.error(`Error attempting to enable fullscreen mode: ${err.message} (${err.name})`);
+            });
         } else {
-            document.exitFullscreen().then(() => setIsFullscreen(false));
+            document.exitFullscreen().catch((err) => {
+                console.error(`Error attempting to exit fullscreen mode: ${err.message} (${err.name})`);
+            });
         }
     };
 
