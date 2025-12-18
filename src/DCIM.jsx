@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Thermometer, Wind, Zap, Droplets, DoorOpen, AlertTriangle,
     Activity, Server, Fan, Battery, Plug, Flame, Settings,
-    Clock, CheckCircle2, ArrowRight, Home, Menu, Download, Maximize, Minimize
+    Clock, CheckCircle2, ArrowRight, Home, Menu, Download, Maximize, Minimize, ArrowUp, ArrowDown
 } from 'lucide-react';
 
 // --- COMPONENT LIBRARY ---
@@ -24,22 +24,42 @@ const Card = ({ title, children, className = "", alert = false }) => (
     </div>
 );
 
-const ValueDisplay = ({ label, value, unit, icon: Icon, color = "text-cyan-400" }) => (
-    <div className="flex items-center justify-between bg-slate-900/80 p-3 rounded-lg border border-slate-700/30 mb-2 last:mb-0">
-        <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-full bg-slate-800 ${color} bg-opacity-20`}>
-                {Icon && <Icon size={20} className={color} />}
+const ValueDisplay = ({ label, value, unit, icon: Icon, color = "text-cyan-400" }) => {
+    const prevValueRef = useRef(value);
+    const [trend, setTrend] = useState('neutral');
+
+    useEffect(() => {
+        if (value > prevValueRef.current) {
+            setTrend('up');
+        } else if (value < prevValueRef.current) {
+            setTrend('down');
+        } else {
+            setTrend('neutral');
+        }
+        prevValueRef.current = value;
+    }, [value]);
+
+    return (
+        <div className="flex items-center justify-between bg-slate-900/80 p-3 rounded-lg border border-slate-700/30 mb-2 last:mb-0">
+            <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-full bg-slate-800 ${color} bg-opacity-20`}>
+                    {Icon && <Icon size={20} className={color} />}
+                </div>
+                <div>
+                    <p className="text-slate-400 text-xs uppercase font-semibold">{label}</p>
+                </div>
             </div>
-            <div>
-                <p className="text-slate-400 text-xs uppercase font-semibold">{label}</p>
+            <div className="text-right flex flex-col items-end">
+                <div className="flex items-center gap-2">
+                    {trend === 'up' && <ArrowUp size={14} className="text-emerald-500 animate-pulse" />}
+                    {trend === 'down' && <ArrowDown size={14} className="text-red-500 animate-pulse" />}
+                    <span className={`text-xl font-bold font-mono drop-shadow-[0_0_5px_currentColor] ${color}`}>{value}</span>
+                    {unit && <span className="text-slate-500 text-sm ml-1">{unit}</span>}
+                </div>
             </div>
         </div>
-        <div className="text-right">
-            <span className={`text-xl font-bold font-mono drop-shadow-[0_0_5px_currentColor] ${color}`}>{value}</span>
-            {unit && <span className="text-slate-500 text-sm ml-1">{unit}</span>}
-        </div>
-    </div>
-);
+    );
+};
 
 const StatusBadge = ({ active, labelOn = "ON", labelOff = "OFF", type = "normal" }) => {
     let colorClass = active ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-slate-700/30 text-slate-500 border-slate-600/30";
