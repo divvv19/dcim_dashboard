@@ -402,10 +402,9 @@ export default function DCIM_Preview() {
     // Real-time graph simulation (Random Walk)
     React.useEffect(() => {
         const interval = setInterval(() => {
+            // Update Environment
             setEnvData(prev => {
                 const last = prev.history[prev.history.length - 1];
-
-                // Random walk logic for smoother, realistic drift
                 let newTemp = last.temp + (Math.random() - 0.5) * 0.4;
                 if (newTemp > 25) newTemp -= 0.2;
                 if (newTemp < 21) newTemp += 0.2;
@@ -415,7 +414,6 @@ export default function DCIM_Preview() {
                 if (newHum < 40) newHum += 0.8;
 
                 const newHistory = [...prev.history.slice(1), { temp: newTemp, hum: newHum }];
-
                 return {
                     ...prev,
                     coldAisleTemp: parseFloat(newTemp.toFixed(1)),
@@ -423,6 +421,20 @@ export default function DCIM_Preview() {
                     history: newHistory
                 };
             });
+
+            // Update PDU (Voltage/Current fluctuation)
+            setPduData(prev => ({
+                pdu1: { ...prev.pdu1, voltage: parseFloat((prev.pdu1.voltage + (Math.random() - 0.5) * 0.2).toFixed(1)), current: parseFloat((prev.pdu1.current + (Math.random() - 0.5) * 0.1).toFixed(1)) },
+                pdu2: { ...prev.pdu2, voltage: parseFloat((prev.pdu2.voltage + (Math.random() - 0.5) * 0.2).toFixed(1)), current: parseFloat((prev.pdu2.current + (Math.random() - 0.5) * 0.1).toFixed(1)) }
+            }));
+
+            // Update UPS (Voltage fluctuation)
+            setUpsData(prev => ({
+                ...prev,
+                inputVoltage: parseFloat((prev.inputVoltage + (Math.random() - 0.5) * 0.3).toFixed(1)),
+                outputVoltage: parseFloat((prev.outputVoltage + (Math.random() - 0.5) * 0.1).toFixed(1))
+            }));
+
         }, 1000);
         return () => clearInterval(interval);
     }, []);
