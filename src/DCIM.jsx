@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
     Thermometer, Wind, Zap, Droplets, DoorOpen, AlertTriangle,
     Activity, Server, Fan, Battery, Plug, Flame, Settings,
-    Clock, CheckCircle2, ArrowRight, Home, Menu, Download, Maximize, Minimize, ArrowUp, ArrowDown
+    Clock, CheckCircle2, ArrowRight, Home, Menu, Download, Maximize, Minimize, ArrowUp, ArrowDown, Info, Check
 } from 'lucide-react';
 
 // --- COMPONENT LIBRARY ---
@@ -99,6 +99,21 @@ const AlarmItem = ({ label, count, color }) => (
         <span className="text-white font-mono font-bold drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">{count}</span>
     </div>
 );
+
+const Toast = ({ message, type = 'success', show }) => {
+    if (!show) return null;
+    const Icon = type === 'success' ? Check : Info;
+    const colorClass = type === 'success' ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400' : 'bg-blue-500/10 border-blue-500/50 text-blue-400';
+
+    return (
+        <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-3 rounded-lg border backdrop-blur-md shadow-2xl transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 ${colorClass}`}>
+            <div className={`p-1 rounded-full ${type === 'success' ? 'bg-emerald-500/20' : 'bg-blue-500/20'}`}>
+                <Icon size={18} />
+            </div>
+            <span className="font-medium">{message}</span>
+        </div>
+    );
+};
 
 // --- PAGE VIEWS (LAYOUTS) ---
 
@@ -370,6 +385,13 @@ export default function DCIM_Preview() {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+    // Toast Logic
+    const showToast = (message, type = 'success') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
+    };
 
     // Mock State
     const [coolingData, setCoolingData] = useState({ supplyTemp: 18.5, returnTemp: 24.2, compressorStatus: true, fanStatus: true, compressorRuntime: 1450, highRoomTemp: false });
@@ -489,6 +511,7 @@ export default function DCIM_Preview() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        showToast(`Exported: ${fileName}`, 'success');
     };
 
     // Idle Timeout Logic
@@ -577,7 +600,7 @@ export default function DCIM_Preview() {
                             {isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />} {isFullscreen ? 'Exit' : 'Full'}
                         </button>
                         <button onClick={handleExport} className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors" title="Export Data"><Download size={14} /> Export</button>
-                        <button onClick={() => setShowSim(!showSim)} className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors"><Settings size={14} /> Simulator</button>
+                        <button onClick={() => { setShowSim(!showSim); showToast(`Simulator: ${!showSim ? 'ON' : 'OFF'}`, 'info'); }} className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors"><Settings size={14} /> Simulator</button>
                         <div className="flex items-center gap-2">
                             <span className={`w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] ${envData.fireStatus === 'Alarm' ? 'bg-red-500 animate-ping' : 'bg-green-500'}`}></span>
                             <span className="text-xs text-slate-400 uppercase font-bold">{envData.fireStatus === 'Alarm' ? 'CRITICAL ALARM' : 'SYSTEM NORMAL'}</span>
@@ -625,6 +648,9 @@ export default function DCIM_Preview() {
                     </button>
                 </div>
             )}
+
+            {/* Toast Notification */}
+            <Toast {...toast} />
 
             <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
