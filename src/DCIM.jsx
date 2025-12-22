@@ -39,21 +39,26 @@ const ValueDisplay = ({ label, value, unit, icon: Icon, color = "text-cyan-400" 
         prevValueRef.current = value;
     }, [value]);
 
+    const handleCopy = () => {
+        navigator.clipboard.writeText(value);
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: `Copied: ${value}${unit ? unit : ''}`, type: 'success' } }));
+    };
+
     return (
-        <div className="flex items-center justify-between bg-slate-900/80 p-3 rounded-lg border border-slate-700/30 mb-2 last:mb-0">
+        <div onClick={handleCopy} className="flex items-center justify-between bg-slate-900/80 p-3 rounded-lg border border-slate-700/30 mb-2 last:mb-0 cursor-pointer hover:bg-slate-800 transition-colors group">
             <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-full bg-slate-800 ${color} bg-opacity-20`}>
                     {Icon && <Icon size={20} className={color} />}
                 </div>
                 <div>
-                    <p className="text-slate-400 text-xs uppercase font-semibold">{label}</p>
+                    <p className="text-slate-400 text-xs uppercase font-semibold group-hover:text-white transition-colors">{label}</p>
                 </div>
             </div>
             <div className="text-right flex flex-col items-end">
                 <div className="flex items-center gap-2">
                     {trend === 'up' && <ArrowUp size={14} className="text-emerald-500 animate-pulse" />}
                     {trend === 'down' && <ArrowDown size={14} className="text-red-500 animate-pulse" />}
-                    <span className={`text-xl font-bold font-mono drop-shadow-[0_0_5px_currentColor] ${color}`}>{value}</span>
+                    <span className={`text-xl font-bold font-mono drop-shadow-[0_0_5px_currentColor] ${color} group-hover:scale-110 transition-transform origin-right`}>{value}</span>
                     {unit && <span className="text-slate-500 text-sm ml-1">{unit}</span>}
                 </div>
             </div>
@@ -392,6 +397,15 @@ export default function DCIM_Preview() {
         setToast({ show: true, message, type });
         setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
     };
+
+    // Listen for custom 'show-toast' events from child components (like ValueDisplay)
+    useEffect(() => {
+        const handleCustomToast = (e) => {
+            showToast(e.detail.message, e.detail.type);
+        };
+        window.addEventListener('show-toast', handleCustomToast);
+        return () => window.removeEventListener('show-toast', handleCustomToast);
+    }, []);
 
     // Mock State
     const [coolingData, setCoolingData] = useState({ supplyTemp: 18.5, returnTemp: 24.2, compressorStatus: true, fanStatus: true, compressorRuntime: 1450, highRoomTemp: false });

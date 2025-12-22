@@ -1,4 +1,4 @@
-import DCIM from './DCIM_Copy_Preview';
+import DCIM from './DCIM';
 
 function App() {
   return (
