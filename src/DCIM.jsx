@@ -569,6 +569,38 @@ export default function DCIM_Preview() {
         return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
     }, []);
 
+    // Keyboard Shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            switch (e.key.toLowerCase()) {
+                case 'h':
+                    setActiveTab('home');
+                    showToast('Shortcut: Home View', 'info');
+                    break;
+                case 'f':
+                    toggleFullscreen();
+                    break;
+                case 's':
+                    setShowSim(prev => {
+                        const newState = !prev;
+                        showToast(`Simulator: ${newState ? 'ON' : 'OFF'}`, 'info');
+                        return newState;
+                    });
+                    break;
+                case 'e':
+                    handleExport();
+                    break;
+                default:
+                    break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [activeTab, showSim, coolingData, upsData, envData, pduData]); // Dependencies for export and toggles
+
     return (
         <div className={`min-h-screen transition-colors duration-500 font-sans text-slate-200 overflow-hidden flex ${envData.fireStatus === 'Alarm' ? 'bg-red-950' : 'bg-[#0b1120]'}`}>
 
