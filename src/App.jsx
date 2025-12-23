@@ -1,4 +1,4 @@
-import DCIM from './DCIM';
+import DCIM from './DCIM_Keyboard_Preview';
 
 function App() {
   return (
