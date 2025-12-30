@@ -201,19 +201,19 @@ const HomeView = ({ coolingData, upsData, envData }) => (
                     <span className="flex items-center gap-2 text-green-400"><div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)]"></div> Humidity (%RH)</span>
                 </div>
             </div>
-            <div className="flex flex-wrap justify-center lg:flex-nowrap lg:justify-around items-center h-auto lg:h-56 w-full px-4 pb-6 gap-6 lg:gap-0">
-                <div className="scale-90 lg:scale-100"><CircularGauge value={envData.coldAisleTemp} label="Avg Temp (°C)" color="text-cyan-400" strokeColor="stroke-cyan-500" size="w-28 h-28 lg:w-40 lg:h-40" radius={50} fontSize="text-xl lg:text-3xl" /></div>
-                <div className="scale-90 lg:scale-100"><CircularGauge value={envData.coldAisleHum} label="Avg Humidity (%)" color="text-green-400" strokeColor="stroke-green-500" size="w-28 h-28 lg:w-40 lg:h-40" radius={50} fontSize="text-xl lg:text-3xl" /></div>
-                <div className="scale-90 lg:scale-100"><CircularGauge value={85} label="Airflow (%)" color="text-blue-400" strokeColor="stroke-blue-500" size="w-28 h-28 lg:w-40 lg:h-40" radius={50} fontSize="text-xl lg:text-3xl" /></div>
+            <div className="flex flex-nowrap justify-between lg:justify-around items-center h-48 lg:h-56 w-full px-2 lg:px-4 pb-4 lg:pb-6 gap-1 lg:gap-0">
+                <div className="shrink-0"><CircularGauge value={envData.coldAisleTemp} label="Avg Temp" color="text-cyan-400" strokeColor="stroke-cyan-500" size="w-24 h-24 lg:w-40 lg:h-40" radius={45} fontSize="text-lg lg:text-3xl" /></div>
+                <div className="shrink-0"><CircularGauge value={envData.coldAisleHum} label="Avg Hum" color="text-green-400" strokeColor="stroke-green-500" size="w-24 h-24 lg:w-40 lg:h-40" radius={45} fontSize="text-lg lg:text-3xl" /></div>
+                <div className="shrink-0"><CircularGauge value={85} label="Airflow" color="text-blue-400" strokeColor="stroke-blue-500" size="w-24 h-24 lg:w-40 lg:h-40" radius={45} fontSize="text-lg lg:text-3xl" /></div>
             </div>
         </Card>
         {/* 5. Capacity / Load */}
         <Card className="bg-slate-800/80">
             <div className="flex flex-col h-full justify-between py-4">
-                <div className="flex flex-wrap justify-around items-center gap-4">
-                    <CircularGauge value={49.9} label="UPS Load" color="text-blue-400" strokeColor="stroke-blue-500" size="w-20 h-20 lg:w-24 lg:h-24" radius={35} fontSize="text-sm lg:text-lg" />
-                    <CircularGauge value={35.2} label="Cooling Cap" color="text-cyan-400" strokeColor="stroke-cyan-500" size="w-20 h-20 lg:w-24 lg:h-24" radius={35} fontSize="text-sm lg:text-lg" />
-                    <CircularGauge value={1.3} label="PUE" color="text-green-400" strokeColor="stroke-green-500" size="w-20 h-20 lg:w-24 lg:h-24" radius={35} fontSize="text-sm lg:text-lg" />
+                <div className="flex flex-nowrap justify-between items-center gap-1 px-2">
+                    <CircularGauge value={49.9} label="UPS Load" color="text-blue-400" strokeColor="stroke-blue-500" size="w-20 h-20 lg:w-24 lg:h-24" radius={35} fontSize="text-xs lg:text-lg" />
+                    <CircularGauge value={35.2} label="Cooling" color="text-cyan-400" strokeColor="stroke-cyan-500" size="w-20 h-20 lg:w-24 lg:h-24" radius={35} fontSize="text-xs lg:text-lg" />
+                    <CircularGauge value={1.3} label="PUE" color="text-green-400" strokeColor="stroke-green-500" size="w-20 h-20 lg:w-24 lg:h-24" radius={35} fontSize="text-xs lg:text-lg" />
                 </div>
                 <div className="mt-4 px-4 space-y-4">
                     <div>
