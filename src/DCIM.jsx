@@ -149,13 +149,13 @@ const HomeView = ({ coolingData, upsData, envData }) => (
 
         {/* 2. UPS Mode */}
         <Card title="UPS Mode" className="bg-slate-800/80">
-            <div className="flex flex-col items-center justify-center h-full gap-4 py-4">
-                <div className="flex items-center gap-2 w-full px-2 lg:px-4">
+            <div className="flex flex-col items-center justify-center h-full gap-2 lg:gap-4 py-3 lg:py-4">
+                <div className="flex items-center gap-2 w-full px-2 lg:px-4 justify-center">
                     <div className="flex flex-col items-center gap-1 shrink-0">
                         <div className="text-[10px] lg:text-xs text-slate-400">Input</div>
                         <div className="px-1.5 py-1 bg-cyan-500 text-white text-[10px] lg:text-xs font-bold rounded min-w-[40px] text-center shadow-[0_0_10px_rgba(6,182,212,0.5)]">{upsData.upsState === 'Mains' ? upsData.inputVoltage : 0}V</div>
                     </div>
-                    <div className="flex-1 h-[2px] bg-slate-600 relative min-w-[20px]">
+                    <div className="w-12 lg:flex-1 h-[2px] bg-slate-600 relative min-w-[20px]">
                         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 border-2 border-slate-500 bg-slate-800 rounded flex items-center justify-center">
                             <Zap size={14} className="text-slate-400" />
                         </div>
@@ -166,8 +166,8 @@ const HomeView = ({ coolingData, upsData, envData }) => (
                     </div>
                 </div>
                 <div className="flex gap-4 mt-2">
-                    <div className={`w-3 h-3 rounded-full shadow-[0_0_8px_currentColor] ${upsData.upsState === 'Mains' ? 'bg-green-500 text-green-500' : 'bg-slate-700 text-slate-700'}`}></div>
-                    <div className={`w-3 h-3 rounded-full shadow-[0_0_8px_currentColor] ${upsData.upsState === 'Battery' ? 'bg-orange-500 text-orange-500' : 'bg-slate-700 text-slate-700'}`}></div>
+                    <div className={`w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full shadow-[0_0_8px_currentColor] ${upsData.upsState === 'Mains' ? 'bg-green-500 text-green-500' : 'bg-slate-700 text-slate-700'}`}></div>
+                    <div className={`w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full shadow-[0_0_8px_currentColor] ${upsData.upsState === 'Battery' ? 'bg-orange-500 text-orange-500' : 'bg-slate-700 text-slate-700'}`}></div>
                 </div>
             </div>
         </Card>
@@ -201,10 +201,10 @@ const HomeView = ({ coolingData, upsData, envData }) => (
                     <span className="flex items-center gap-2 text-green-400"><div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)]"></div> Humidity (%RH)</span>
                 </div>
             </div>
-            <div className="flex flex-wrap lg:flex-nowrap justify-around items-center h-auto lg:h-56 w-full px-4 pb-6 gap-6 lg:gap-0">
-                <div className="scale-90 lg:scale-100"><CircularGauge value={envData.coldAisleTemp} label="Avg Temp (°C)" color="text-cyan-400" strokeColor="stroke-cyan-500" size="w-32 h-32 lg:w-40 lg:h-40" radius={60} fontSize="text-2xl lg:text-3xl" /></div>
-                <div className="scale-90 lg:scale-100"><CircularGauge value={envData.coldAisleHum} label="Avg Humidity (%)" color="text-green-400" strokeColor="stroke-green-500" size="w-32 h-32 lg:w-40 lg:h-40" radius={60} fontSize="text-2xl lg:text-3xl" /></div>
-                <div className="scale-90 lg:scale-100"><CircularGauge value={85} label="Airflow (%)" color="text-blue-400" strokeColor="stroke-blue-500" size="w-32 h-32 lg:w-40 lg:h-40" radius={60} fontSize="text-2xl lg:text-3xl" /></div>
+            <div className="flex flex-wrap justify-center lg:flex-nowrap lg:justify-around items-center h-auto lg:h-56 w-full px-4 pb-6 gap-6 lg:gap-0">
+                <div className="scale-90 lg:scale-100"><CircularGauge value={envData.coldAisleTemp} label="Avg Temp (°C)" color="text-cyan-400" strokeColor="stroke-cyan-500" size="w-28 h-28 lg:w-40 lg:h-40" radius={50} fontSize="text-xl lg:text-3xl" /></div>
+                <div className="scale-90 lg:scale-100"><CircularGauge value={envData.coldAisleHum} label="Avg Humidity (%)" color="text-green-400" strokeColor="stroke-green-500" size="w-28 h-28 lg:w-40 lg:h-40" radius={50} fontSize="text-xl lg:text-3xl" /></div>
+                <div className="scale-90 lg:scale-100"><CircularGauge value={85} label="Airflow (%)" color="text-blue-400" strokeColor="stroke-blue-500" size="w-28 h-28 lg:w-40 lg:h-40" radius={50} fontSize="text-xl lg:text-3xl" /></div>
             </div>
         </Card>
         {/* 5. Capacity / Load */}
@@ -681,7 +681,7 @@ export default function DCIM_Preview() {
                     </div>
                 )}
 
-                <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
+                <div className="flex-1 p-4 lg:p-8 overflow-y-auto custom-scrollbar">
                     {activeTab === 'home' && <HomeView coolingData={coolingData} upsData={upsData} envData={envData} />}
                     {activeTab === 'cooling' && <CoolingView data={coolingData} />}
                     {activeTab === 'ups' && <UPSView data={upsData} />}
