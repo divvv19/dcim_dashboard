@@ -11,7 +11,7 @@ const Card = ({ title, children, className = "", alert = false }) => (
     <div className={`rounded-xl border backdrop-blur-md transition-all duration-300 ${alert
         ? 'bg-red-900/80 border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.3)]'
         : 'bg-slate-800/80 border-slate-700/50 shadow-lg'
-        } ${className} flex flex-col`}>
+        } ${className} flex flex-col overflow-hidden`}>
         {title && (
             <h3 className={`text-sm font-medium uppercase tracking-wider px-4 py-3 border-b border-white/5 bg-white/5 flex items-center gap-2 ${alert ? 'text-red-200' : 'text-slate-400'
                 }`}>
@@ -149,20 +149,20 @@ const HomeView = ({ coolingData, upsData, envData }) => (
 
         {/* 2. UPS Mode */}
         <Card title="UPS Mode" className="bg-slate-800/80">
-            <div className="flex flex-col items-center justify-center h-full gap-4 py-2">
-                <div className="flex items-center gap-2 w-full px-4">
-                    <div className="flex flex-col items-center gap-1">
-                        <div className="text-xs text-slate-400">Input</div>
-                        <div className="px-2 py-1 bg-cyan-500 text-white text-xs font-bold rounded min-w-[50px] text-center shadow-[0_0_10px_rgba(6,182,212,0.5)]">{upsData.upsState === 'Mains' ? upsData.inputVoltage : 0}V</div>
+            <div className="flex flex-col items-center justify-center h-full gap-4 py-4">
+                <div className="flex items-center gap-2 w-full px-2 lg:px-4">
+                    <div className="flex flex-col items-center gap-1 shrink-0">
+                        <div className="text-[10px] lg:text-xs text-slate-400">Input</div>
+                        <div className="px-1.5 py-1 bg-cyan-500 text-white text-[10px] lg:text-xs font-bold rounded min-w-[40px] text-center shadow-[0_0_10px_rgba(6,182,212,0.5)]">{upsData.upsState === 'Mains' ? upsData.inputVoltage : 0}V</div>
                     </div>
-                    <div className="flex-1 h-[2px] bg-slate-600 relative">
+                    <div className="flex-1 h-[2px] bg-slate-600 relative min-w-[20px]">
                         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 border-2 border-slate-500 bg-slate-800 rounded flex items-center justify-center">
                             <Zap size={14} className="text-slate-400" />
                         </div>
                     </div>
-                    <div className="flex flex-col items-center gap-1">
-                        <div className="text-xs text-slate-400">Output</div>
-                        <div className="px-2 py-1 bg-cyan-500 text-white text-xs font-bold rounded min-w-[50px] text-center shadow-[0_0_10px_rgba(6,182,212,0.5)]">{upsData.outputVoltage}V</div>
+                    <div className="flex flex-col items-center gap-1 shrink-0">
+                        <div className="text-[10px] lg:text-xs text-slate-400">Output</div>
+                        <div className="px-1.5 py-1 bg-cyan-500 text-white text-[10px] lg:text-xs font-bold rounded min-w-[40px] text-center shadow-[0_0_10px_rgba(6,182,212,0.5)]">{upsData.outputVoltage}V</div>
                     </div>
                 </div>
                 <div className="flex gap-4 mt-2">
@@ -201,20 +201,19 @@ const HomeView = ({ coolingData, upsData, envData }) => (
                     <span className="flex items-center gap-2 text-green-400"><div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)]"></div> Humidity (%RH)</span>
                 </div>
             </div>
-            <div className="flex justify-around items-center h-56 w-full px-4 pb-6">
-                <CircularGauge value={envData.coldAisleTemp} label="Avg Temp (°C)" color="text-cyan-400" strokeColor="stroke-cyan-500" size="w-40 h-40" radius={60} fontSize="text-3xl" />
-                <CircularGauge value={envData.coldAisleHum} label="Avg Humidity (%)" color="text-green-400" strokeColor="stroke-green-500" size="w-40 h-40" radius={60} fontSize="text-3xl" />
-                <CircularGauge value={85} label="Airflow (%)" color="text-blue-400" strokeColor="stroke-blue-500" size="w-40 h-40" radius={60} fontSize="text-3xl" />
+            <div className="flex flex-wrap lg:flex-nowrap justify-around items-center h-auto lg:h-56 w-full px-4 pb-6 gap-6 lg:gap-0">
+                <div className="scale-90 lg:scale-100"><CircularGauge value={envData.coldAisleTemp} label="Avg Temp (°C)" color="text-cyan-400" strokeColor="stroke-cyan-500" size="w-32 h-32 lg:w-40 lg:h-40" radius={60} fontSize="text-2xl lg:text-3xl" /></div>
+                <div className="scale-90 lg:scale-100"><CircularGauge value={envData.coldAisleHum} label="Avg Humidity (%)" color="text-green-400" strokeColor="stroke-green-500" size="w-32 h-32 lg:w-40 lg:h-40" radius={60} fontSize="text-2xl lg:text-3xl" /></div>
+                <div className="scale-90 lg:scale-100"><CircularGauge value={85} label="Airflow (%)" color="text-blue-400" strokeColor="stroke-blue-500" size="w-32 h-32 lg:w-40 lg:h-40" radius={60} fontSize="text-2xl lg:text-3xl" /></div>
             </div>
         </Card>
-
         {/* 5. Capacity / Load */}
         <Card className="bg-slate-800/80">
             <div className="flex flex-col h-full justify-between py-4">
-                <div className="flex justify-around items-center">
-                    <CircularGauge value={49.9} label="UPS Load" color="text-blue-400" strokeColor="stroke-blue-500" />
-                    <CircularGauge value={35.2} label="Cooling Cap" color="text-cyan-400" strokeColor="stroke-cyan-500" />
-                    <CircularGauge value={1.3} label="PUE" color="text-green-400" strokeColor="stroke-green-500" />
+                <div className="flex flex-wrap justify-around items-center gap-4">
+                    <CircularGauge value={49.9} label="UPS Load" color="text-blue-400" strokeColor="stroke-blue-500" size="w-20 h-20 lg:w-24 lg:h-24" radius={35} fontSize="text-sm lg:text-lg" />
+                    <CircularGauge value={35.2} label="Cooling Cap" color="text-cyan-400" strokeColor="stroke-cyan-500" size="w-20 h-20 lg:w-24 lg:h-24" radius={35} fontSize="text-sm lg:text-lg" />
+                    <CircularGauge value={1.3} label="PUE" color="text-green-400" strokeColor="stroke-green-500" size="w-20 h-20 lg:w-24 lg:h-24" radius={35} fontSize="text-sm lg:text-lg" />
                 </div>
                 <div className="mt-4 px-4 space-y-4">
                     <div>
@@ -285,28 +284,28 @@ const UPSView = ({ data }) => {
                 <Card title="Power Flow Topology" className="flex-1 min-h-[480px]">
                     <div className="flex flex-col h-full py-6 px-4">
                         <div className="flex items-start justify-between relative z-10 px-2 sm:px-8">
-                            <div className="flex flex-col items-center gap-3 w-32 z-20">
-                                <div className="w-16 h-16 rounded-lg bg-slate-800 border-2 border-slate-600 flex items-center justify-center shadow-lg"><Plug className={isBatteryMode ? "text-slate-600" : "text-emerald-400 drop-shadow-[0_0_8px_currentColor]"} size={32} /></div>
-                                <span className="text-sm font-bold text-slate-300 mt-2">MAINS</span>
+                            <div className="flex flex-col items-center gap-3 w-20 lg:w-32 z-20">
+                                <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-lg bg-slate-800 border-2 border-slate-600 flex items-center justify-center shadow-lg"><Plug className={isBatteryMode ? "text-slate-600" : "text-emerald-400 drop-shadow-[0_0_8px_currentColor]"} size={24} /></div>
+                                <span className="text-xs lg:text-sm font-bold text-slate-300 mt-2">MAINS</span>
                             </div>
                             <div className="flex-1 h-1 bg-slate-700 mx-2 mt-8 relative rounded-full">{!isBatteryMode && (<div className="absolute inset-0 bg-emerald-500/50 animate-progress-bar shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>)}</div>
-                            <div className="flex flex-col items-center gap-2 w-40 z-20 -mt-4">
-                                <div className={`w-32 h-32 rounded-xl border-2 ${isBatteryMode ? 'border-orange-500 bg-orange-900/10' : 'border-blue-500 bg-blue-900/10'} flex flex-col items-center justify-center bg-slate-900 shadow-[0_0_15px_rgba(0,0,0,0.3)]`}>
+                            <div className="flex flex-col items-center gap-2 w-28 lg:w-40 z-20 -mt-2 lg:-mt-4">
+                                <div className={`w-24 h-24 lg:w-32 lg:h-32 rounded-xl border-2 ${isBatteryMode ? 'border-orange-500 bg-orange-900/10' : 'border-blue-500 bg-blue-900/10'} flex flex-col items-center justify-center bg-slate-900 shadow-[0_0_15px_rgba(0,0,0,0.3)]`}>
                                     <Zap className={isBatteryMode ? "text-orange-500 animate-pulse" : "text-blue-400 drop-shadow-[0_0_8px_currentColor]"} size={40} />
                                     <span className="mt-2 text-xs font-mono text-slate-400">Mode: {data.upsState}</span>
                                 </div>
                             </div>
                             <div className="flex-1 h-1 bg-slate-700 mx-2 mt-8 relative rounded-full"><div className={`absolute inset-0 ${isBatteryMode ? 'bg-orange-500/50' : 'bg-blue-500/50'} animate-progress-bar shadow-[0_0_10px_currentColor]`}></div></div>
-                            <div className="flex flex-col items-center gap-3 w-32 z-20">
-                                <div className="w-16 h-16 rounded-lg bg-slate-800 border-2 border-slate-600 flex items-center justify-center shadow-lg"><Server className="text-cyan-400 drop-shadow-[0_0_8px_currentColor]" size={32} /></div>
-                                <span className="text-sm font-bold text-slate-300 mt-2">LOAD</span>
+                            <div className="flex flex-col items-center gap-3 w-20 lg:w-32 z-20">
+                                <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-lg bg-slate-800 border-2 border-slate-600 flex items-center justify-center shadow-lg"><Server className="text-cyan-400 drop-shadow-[0_0_8px_currentColor]" size={24} /></div>
+                                <span className="text-xs lg:text-sm font-bold text-slate-300 mt-2">LOAD</span>
                             </div>
                         </div>
-                        <div className="flex-1 flex justify-center relative min-h-[60px]"><div className={`w-1 h-full ${isBatteryMode ? 'bg-orange-500 animate-pulse' : 'bg-slate-700'}`}></div></div>
+                        <div className="flex-1 flex justify-center relative min-h-[40px] lg:min-h-[60px]"><div className={`w-1 h-full ${isBatteryMode ? 'bg-orange-500 animate-pulse' : 'bg-slate-700'}`}></div></div>
                         <div className="flex justify-center pb-4">
-                            <div className="w-48 p-4 rounded-xl bg-slate-800 border border-slate-700 flex items-center gap-4 shadow-lg z-20 relative">
+                            <div className="w-full max-w-[200px] lg:w-48 p-4 rounded-xl bg-slate-800 border border-slate-700 flex items-center gap-4 shadow-lg z-20 relative">
                                 <Battery className={isBatteryMode ? "text-orange-400" : "text-green-400 drop-shadow-[0_0_8px_currentColor]"} size={28} />
-                                <div><div className="text-xs text-slate-400 uppercase">Battery Bank</div><div className="text-lg font-mono font-bold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">{data.batteryVoltage}V</div></div>
+                                <div><div className="text-[10px] lg:text-xs text-slate-400 uppercase">Battery Bank</div><div className="text-sm lg:text-lg font-mono font-bold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">{data.batteryVoltage}V</div></div>
                             </div>
                         </div>
                     </div>
@@ -388,9 +387,16 @@ export default function DCIM_Preview() {
     const [activeTab, setActiveTab] = useState('home');
     const [showSim, setShowSim] = useState(false);
     const [currentTime, setCurrentTime] = useState(new Date());
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default closed on mobile, checked in useEffect for desktop
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+    // Set sidebar open on desktop by default
+    useEffect(() => {
+        if (window.innerWidth >= 1024) {
+            setIsSidebarOpen(true);
+        }
+    }, []);
 
     // Toast Logic
     const showToast = (message, type = 'success') => {
@@ -605,7 +611,13 @@ export default function DCIM_Preview() {
         <div className={`min-h-screen transition-colors duration-500 font-sans text-slate-200 overflow-hidden flex ${envData.fireStatus === 'Alarm' ? 'bg-red-950' : 'bg-[#0b1120]'}`}>
 
             {/* Sidebar */}
-            <div className={`${isSidebarOpen ? 'w-64 border-r' : 'w-0 border-r-0'} transition-all duration-300 overflow-hidden z-20 flex flex-col backdrop-blur-md bg-slate-900/80 border-slate-800`}>
+            {/* Sidebar Overlay for Mobile */}
+            {isSidebarOpen && (
+                <div onClick={() => setIsSidebarOpen(false)} className="fixed inset-0 bg-black/50 z-20 lg:hidden backdrop-blur-sm"></div>
+            )}
+
+            {/* Sidebar */}
+            <div className={`fixed lg:relative inset-y-0 left-0 z-30 ${isSidebarOpen ? 'w-64 translate-x-0' : 'w-64 -translate-x-full lg:w-0 lg:translate-x-0'} transition-transform duration-300 overflow-hidden flex flex-col backdrop-blur-md bg-slate-900/80 border-r border-slate-800 shadow-2xl lg:shadow-none`}>
                 <div className="p-6 flex items-center gap-3">
                     <div className="w-8 h-8 rounded bg-linear-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20"><Server className="text-white" size={18} /></div>
                     <h1 className="text-xl font-bold tracking-tight text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]">DCIM</h1>
@@ -641,9 +653,9 @@ export default function DCIM_Preview() {
 
             <main className="flex-1 relative z-10 flex flex-col h-screen overflow-hidden">
                 {/* Header */}
-                <header className="h-16 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between px-8">
+                <header className="h-16 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between px-4 lg:px-8 shrink-0">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-slate-400 hover:text-cyan-400 transition-colors">
+                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-slate-400 hover:text-cyan-400 transition-colors p-1 rounded-md hover:bg-slate-800">
                             <Menu size={24} />
                         </button>
                         <h2 className="text-lg font-medium text-slate-200 uppercase tracking-widest">{activeTab}</h2>
@@ -715,4 +727,5 @@ export default function DCIM_Preview() {
       `}</style>
         </div>
     );
+
 }
