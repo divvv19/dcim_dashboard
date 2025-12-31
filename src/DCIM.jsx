@@ -13,7 +13,7 @@ const Card = ({ title, children, className = "", alert = false }) => (
         : 'bg-slate-800/80 border-slate-700/50 shadow-lg'
         } ${className} flex flex-col overflow-hidden`}>
         {title && (
-            <h3 className={`text-sm font-medium uppercase tracking-wider px-4 py-3 border-b border-white/5 bg-white/5 flex items-center gap-2 ${alert ? 'text-red-200' : 'text-slate-400'
+            <h3 className={`text-[10px] lg:text-sm font-medium uppercase tracking-wider px-2 lg:px-4 py-2 lg:py-3 border-b border-white/5 bg-white/5 flex items-center gap-2 ${alert ? 'text-red-200' : 'text-slate-400'
                 }`}>
                 {title}
             </h3>
@@ -78,19 +78,19 @@ const StatusBadge = ({ active, labelOn = "ON", labelOff = "OFF", type = "normal"
     );
 };
 
-const CircularGauge = ({ value, label, color = "text-cyan-400", strokeColor = "stroke-cyan-500", size = "w-24 h-24", radius = 35, fontSize = "text-lg" }) => {
+const CircularGauge = ({ value, label, color = "text-cyan-400", strokeColor = "stroke-cyan-500", size = "w-24 h-24", radius = 35, fontSize = "text-lg", strokeWidth = 8 }) => {
     const circumference = 2 * Math.PI * radius;
     const offset = circumference - (value / 100) * circumference;
     return (
         <div className="flex flex-col items-center">
             <div className={`relative ${size} flex items-center justify-center`}>
                 <svg className="w-full h-full -rotate-90">
-                    <circle cx="50%" cy="50%" r={radius} className="fill-none stroke-slate-700/50 stroke-[8px]" />
-                    <circle cx="50%" cy="50%" r={radius} className={`fill-none ${strokeColor} stroke-[8px] transition-all drop-shadow-[0_0_4px_currentColor]`} strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" />
+                    <circle cx="50%" cy="50%" r={radius} className={`fill-none stroke-slate-700/50`} strokeWidth={strokeWidth} />
+                    <circle cx="50%" cy="50%" r={radius} className={`fill-none ${strokeColor} transition-all drop-shadow-[0_0_4px_currentColor]`} strokeWidth={strokeWidth} strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" />
                 </svg>
                 <span className={`absolute ${fontSize} font-bold font-mono drop-shadow-[0_0_5px_currentColor] ${color}`}>{value}</span>
             </div>
-            <span className="text-xs text-slate-400 uppercase mt-1">{label}</span>
+            <span className="text-[8px] lg:text-xs text-slate-400 uppercase mt-1">{label}</span>
         </div>
     );
 };
@@ -123,7 +123,7 @@ const Toast = ({ message, type = 'success', show }) => {
 // --- PAGE VIEWS (LAYOUTS) ---
 
 const HomeView = ({ coolingData, upsData, envData }) => (
-    <div className="grid grid-cols-1 lg:grid-cols-3 grid-rows-[auto_auto] gap-6 h-full pb-6">
+    <div className="grid grid-cols-3 grid-rows-[auto_auto] gap-2 lg:gap-6 h-full pb-6">
 
         {/* 1. Alarm Status */}
         <Card title="Alarm Status" className="bg-slate-800/80">
@@ -134,14 +134,14 @@ const HomeView = ({ coolingData, upsData, envData }) => (
                     <AlarmItem label="Critical Alarm" count={envData.fireStatus === 'Alarm' ? 1 : 0} color="bg-red-500" />
                 </div>
                 {/* Donut Chart Mockup */}
-                <div className="relative w-28 h-28 flex items-center justify-center">
+                <div className="relative w-16 h-16 lg:w-28 lg:h-28 flex items-center justify-center">
                     <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
                         <path className="text-slate-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" />
                         <path className="text-red-500 drop-shadow-[0_0_4px_currentColor]" strokeDasharray={`${envData.fireStatus === 'Alarm' ? 25 : 0}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" />
                         <path className="text-orange-500 drop-shadow-[0_0_4px_currentColor]" strokeDasharray="15, 100" strokeDashoffset="-25" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" />
                     </svg>
                     <div className="absolute flex flex-col items-center justify-center">
-                        <span className="text-2xl font-bold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">{envData.fireStatus === 'Alarm' ? 2 : 1}</span>
+                        <span className="text-lg lg:text-2xl font-bold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">{envData.fireStatus === 'Alarm' ? 2 : 1}</span>
                     </div>
                 </div>
             </div>
@@ -150,43 +150,45 @@ const HomeView = ({ coolingData, upsData, envData }) => (
         {/* 2. UPS Mode */}
         <Card title="UPS Mode" className="bg-slate-800/80">
             <div className="flex flex-col items-center justify-center h-full gap-2 lg:gap-4 py-3 lg:py-4">
-                <div className="flex items-center gap-2 w-full px-2 lg:px-4 justify-center">
+                <div className="flex items-center gap-1 lg:gap-2 w-full px-1 lg:px-4 justify-center">
                     <div className="flex flex-col items-center gap-1 shrink-0">
-                        <div className="text-[10px] lg:text-xs text-slate-400">Input</div>
-                        <div className="px-1.5 py-1 bg-cyan-500 text-white text-[10px] lg:text-xs font-bold rounded min-w-[40px] text-center shadow-[0_0_10px_rgba(6,182,212,0.5)]">{upsData.upsState === 'Mains' ? upsData.inputVoltage : 0}V</div>
+                        <div className="text-[8px] lg:text-xs text-slate-400">Input</div>
+                        <div className="px-1 py-0.5 lg:px-1.5 lg:py-1 bg-cyan-500 text-white text-[8px] lg:text-xs font-bold rounded min-w-[30px] lg:min-w-[40px] text-center shadow-[0_0_10px_rgba(6,182,212,0.5)]">{upsData.upsState === 'Mains' ? upsData.inputVoltage : 0}V</div>
                     </div>
-                    <div className="w-12 lg:flex-1 h-[2px] bg-slate-600 relative min-w-[20px]">
-                        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 border-2 border-slate-500 bg-slate-800 rounded flex items-center justify-center">
-                            <Zap size={14} className="text-slate-400" />
+                    <div className="w-8 lg:flex-1 h-[2px] bg-slate-600 relative min-w-[10px]">
+                        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 lg:w-8 lg:h-8 border-2 border-slate-500 bg-slate-800 rounded flex items-center justify-center">
+                            <Zap size={10} className="text-slate-400 lg:hidden" />
+                            <Zap size={14} className="text-slate-400 hidden lg:block" />
                         </div>
                     </div>
                     <div className="flex flex-col items-center gap-1 shrink-0">
-                        <div className="text-[10px] lg:text-xs text-slate-400">Output</div>
-                        <div className="px-1.5 py-1 bg-cyan-500 text-white text-[10px] lg:text-xs font-bold rounded min-w-[40px] text-center shadow-[0_0_10px_rgba(6,182,212,0.5)]">{upsData.outputVoltage}V</div>
+                        <div className="text-[8px] lg:text-xs text-slate-400">Output</div>
+                        <div className="px-1 py-0.5 lg:px-1.5 lg:py-1 bg-cyan-500 text-white text-[8px] lg:text-xs font-bold rounded min-w-[30px] lg:min-w-[40px] text-center shadow-[0_0_10px_rgba(6,182,212,0.5)]">{upsData.outputVoltage}V</div>
                     </div>
                 </div>
-                <div className="flex gap-4 mt-2">
-                    <div className={`w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full shadow-[0_0_8px_currentColor] ${upsData.upsState === 'Mains' ? 'bg-green-500 text-green-500' : 'bg-slate-700 text-slate-700'}`}></div>
-                    <div className={`w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full shadow-[0_0_8px_currentColor] ${upsData.upsState === 'Battery' ? 'bg-orange-500 text-orange-500' : 'bg-slate-700 text-slate-700'}`}></div>
+                <div className="flex gap-2 lg:gap-4 mt-2">
+                    <div className={`w-2 h-2 lg:w-3 lg:h-3 rounded-full shadow-[0_0_8px_currentColor] ${upsData.upsState === 'Mains' ? 'bg-green-500 text-green-500' : 'bg-slate-700 text-slate-700'}`}></div>
+                    <div className={`w-2 h-2 lg:w-3 lg:h-3 rounded-full shadow-[0_0_8px_currentColor] ${upsData.upsState === 'Battery' ? 'bg-orange-500 text-orange-500' : 'bg-slate-700 text-slate-700'}`}></div>
                 </div>
             </div>
         </Card>
 
         {/* 3. Cooling Status */}
         <Card title="Cooling Status" className="bg-slate-800/80">
-            <div className="space-y-3 px-2">
+            <div className="space-y-1 lg:space-y-3 px-1 lg:px-2">
                 {[
-                    { label: 'Operation Status', value: coolingData.compressorStatus ? 'ON' : 'OFF', unit: '' },
-                    { label: 'Control Mode', value: 'Return Air', unit: '' },
-                    { label: 'Supply Air Temp', value: coolingData.supplyTemp, unit: '°C' },
-                    { label: 'Return Air Temp', value: coolingData.returnTemp, unit: '°C' },
-                    { label: 'Return Humidity', value: '45.0', unit: '%' },
+                    { label: 'Op. Status', fullLabel: 'Operation Status', value: coolingData.compressorStatus ? 'ON' : 'OFF', unit: '' },
+                    { label: 'Mode', fullLabel: 'Control Mode', value: 'Return Air', unit: '' },
+                    { label: 'Supply', fullLabel: 'Supply Air Temp', value: coolingData.supplyTemp, unit: '°C' },
+                    { label: 'Return', fullLabel: 'Return Air Temp', value: coolingData.returnTemp, unit: '°C' },
+                    { label: 'Hum.', fullLabel: 'Return Humidity', value: '45.0', unit: '%' },
                 ].map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-sm">
-                        <span className="text-slate-400">{item.label}</span>
-                        <div className="flex items-center gap-2">
-                            <span className="bg-cyan-500 text-white px-2 py-0.5 rounded text-xs font-bold min-w-[50px] text-center shadow-[0_0_8px_rgba(6,182,212,0.4)]">{item.value}</span>
-                            <span className="text-slate-500 w-4">{item.unit}</span>
+                    <div key={idx} className="flex items-center justify-between text-[10px] lg:text-sm">
+                        <span className="text-slate-400 hidden lg:inline">{item.fullLabel}</span>
+                        <span className="text-slate-400 lg:hidden">{item.label}</span>
+                        <div className="flex items-center gap-1 lg:gap-2">
+                            <span className="bg-cyan-500 text-white px-1 lg:px-2 py-0.5 rounded text-[10px] lg:text-xs font-bold min-w-[30px] lg:min-w-[50px] text-center shadow-[0_0_8px_rgba(6,182,212,0.4)]">{item.value}</span>
+                            <span className="text-slate-500 w-3 lg:w-4">{item.unit}</span>
                         </div>
                     </div>
                 ))}
@@ -194,7 +196,7 @@ const HomeView = ({ coolingData, upsData, envData }) => (
         </Card>
 
         {/* 4. Micro Environment Chart */}
-        <Card title="MDC Environment" className="lg:col-span-2 bg-slate-800/80">
+        <Card title="MDC Environment" className="col-span-2 bg-slate-800/80">
             <div className="flex items-center gap-4 mb-2 px-4">
                 <div className="flex gap-4 text-xs font-medium">
                     <span className="flex items-center gap-2 text-cyan-400"><div className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]"></div> Temperature (°C)</span>
@@ -209,20 +211,20 @@ const HomeView = ({ coolingData, upsData, envData }) => (
         </Card>
         {/* 5. Capacity / Load */}
         <Card className="bg-slate-800/80">
-            <div className="flex flex-col h-full justify-between py-4">
-                <div className="flex flex-nowrap justify-between items-center gap-1 px-2">
-                    <CircularGauge value={49.9} label="UPS Load" color="text-blue-400" strokeColor="stroke-blue-500" size="w-20 h-20 lg:w-24 lg:h-24" radius={35} fontSize="text-xs lg:text-lg" />
-                    <CircularGauge value={35.2} label="Cooling" color="text-cyan-400" strokeColor="stroke-cyan-500" size="w-20 h-20 lg:w-24 lg:h-24" radius={35} fontSize="text-xs lg:text-lg" />
-                    <CircularGauge value={1.3} label="PUE" color="text-green-400" strokeColor="stroke-green-500" size="w-20 h-20 lg:w-24 lg:h-24" radius={35} fontSize="text-xs lg:text-lg" />
+            <div className="flex flex-col h-full justify-between py-2 lg:py-4">
+                <div className="flex flex-nowrap justify-between items-center gap-1 px-1 lg:px-2">
+                    <CircularGauge value={49.9} label="UPS" color="text-blue-400" strokeColor="stroke-blue-500" size="w-10 h-10 lg:w-24 lg:h-24" radius={35} fontSize="text-[8px] lg:text-lg" strokeWidth={6} />
+                    <CircularGauge value={35.2} label="COOL" color="text-cyan-400" strokeColor="stroke-cyan-500" size="w-10 h-10 lg:w-24 lg:h-24" radius={35} fontSize="text-[8px] lg:text-lg" strokeWidth={6} />
+                    <CircularGauge value={1.3} label="PUE" color="text-green-400" strokeColor="stroke-green-500" size="w-10 h-10 lg:w-24 lg:h-24" radius={35} fontSize="text-[8px] lg:text-lg" strokeWidth={6} />
                 </div>
-                <div className="mt-4 px-4 space-y-4">
+                <div className="mt-2 lg:mt-4 px-2 lg:px-4 space-y-2 lg:space-y-4">
                     <div>
-                        <div className="flex justify-between text-xs mb-1"><span className="text-slate-400">Energy</span><span className="text-white font-mono drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">3468.07 kWh</span></div>
-                        <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-cyan-500 w-[70%] shadow-[0_0_10px_rgba(6,182,212,0.6)]"></div></div>
+                        <div className="flex justify-between text-[8px] lg:text-xs mb-0.5 lg:mb-1"><span className="text-slate-400">Energy</span><span className="text-white font-mono drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">3468 kWh</span></div>
+                        <div className="h-1 lg:h-1.5 bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-cyan-500 w-[70%] shadow-[0_0_10px_rgba(6,182,212,0.6)]"></div></div>
                     </div>
                     <div>
-                        <div className="flex justify-between text-xs mb-1"><span className="text-slate-400">Total Power</span><span className="text-white font-mono drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">0.21 kW</span></div>
-                        <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-green-500 w-[30%] shadow-[0_0_10px_rgba(34,197,94,0.6)]"></div></div>
+                        <div className="flex justify-between text-[8px] lg:text-xs mb-0.5 lg:mb-1"><span className="text-slate-400">Power</span><span className="text-white font-mono drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">0.21 kW</span></div>
+                        <div className="h-1 lg:h-1.5 bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-green-500 w-[30%] shadow-[0_0_10px_rgba(34,197,94,0.6)]"></div></div>
                     </div>
                 </div>
             </div>
