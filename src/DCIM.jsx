@@ -101,7 +101,7 @@ const AlarmItem = ({ label, count, color }) => (
             <div className={`w-3 h-3 rounded-full shadow-[0_0_8px_currentColor] ${color}`}></div>
             <span className="text-slate-300 text-sm">{label}</span>
         </div>
-        <span className="text-white font-mono font-bold drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] hidden lg:block">{count}</span>
+        <span className="text-white font-mono font-bold drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">{count}</span>
     </div>
 );
 
@@ -134,7 +134,7 @@ const HomeView = ({ coolingData, upsData, envData }) => (
                     <AlarmItem label="Critical Alarm" count={envData.fireStatus === 'Alarm' ? 1 : 0} color="bg-red-500" />
                 </div>
                 {/* Donut Chart Mockup */}
-                <div className="relative w-16 h-16 lg:w-28 lg:h-28 flex items-center justify-center">
+                <div className="relative w-16 h-16 lg:w-28 lg:h-28 hidden lg:flex items-center justify-center">
                     <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
                         <path className="text-slate-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" />
                         <path className="text-red-500 drop-shadow-[0_0_4px_currentColor]" strokeDasharray={`${envData.fireStatus === 'Alarm' ? 25 : 0}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" />
