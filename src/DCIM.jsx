@@ -101,7 +101,7 @@ const AlarmItem = ({ label, count, color }) => (
             <div className={`w-3 h-3 rounded-full shadow-[0_0_8px_currentColor] ${color}`}></div>
             <span className="text-slate-300 text-sm">{label}</span>
         </div>
-        <span className="text-white font-mono font-bold drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">{count}</span>
+        <span className="text-white font-mono font-bold drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] hidden lg:block">{count}</span>
     </div>
 );
 
@@ -141,7 +141,7 @@ const HomeView = ({ coolingData, upsData, envData }) => (
                         <path className="text-orange-500 drop-shadow-[0_0_4px_currentColor]" strokeDasharray="15, 100" strokeDashoffset="-25" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" />
                     </svg>
                     <div className="absolute flex flex-col items-center justify-center">
-                        <span className="text-lg lg:text-2xl font-bold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">{envData.fireStatus === 'Alarm' ? 2 : 1}</span>
+                        <span className="text-lg lg:text-2xl font-bold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] hidden lg:block">{envData.fireStatus === 'Alarm' ? 2 : 1}</span>
                     </div>
                 </div>
             </div>
@@ -204,9 +204,9 @@ const HomeView = ({ coolingData, upsData, envData }) => (
                 </div>
             </div>
             <div className="flex flex-nowrap justify-between lg:justify-around items-center h-48 lg:h-56 w-full px-2 lg:px-4 pb-4 lg:pb-6 gap-1 lg:gap-0">
-                <div className="shrink-0"><CircularGauge value={envData.coldAisleTemp} label="Avg Temp" color="text-cyan-400" strokeColor="stroke-cyan-500" size="w-24 h-24 lg:w-40 lg:h-40" radius={45} fontSize="text-lg lg:text-3xl" /></div>
-                <div className="shrink-0"><CircularGauge value={envData.coldAisleHum} label="Avg Hum" color="text-green-400" strokeColor="stroke-green-500" size="w-24 h-24 lg:w-40 lg:h-40" radius={45} fontSize="text-lg lg:text-3xl" /></div>
-                <div className="shrink-0"><CircularGauge value={85} label="Airflow" color="text-blue-400" strokeColor="stroke-blue-500" size="w-24 h-24 lg:w-40 lg:h-40" radius={45} fontSize="text-lg lg:text-3xl" /></div>
+                <div className="shrink-0"><CircularGauge value={envData.coldAisleTemp} label="Avg Temp" color="text-cyan-400" strokeColor="stroke-cyan-500" size="w-16 h-16 lg:w-40 lg:h-40" radius={45} fontSize="text-sm lg:text-3xl" strokeWidth={6} /></div>
+                <div className="shrink-0"><CircularGauge value={envData.coldAisleHum} label="Avg Hum" color="text-green-400" strokeColor="stroke-green-500" size="w-16 h-16 lg:w-40 lg:h-40" radius={45} fontSize="text-sm lg:text-3xl" strokeWidth={6} /></div>
+                <div className="shrink-0"><CircularGauge value={85} label="Airflow" color="text-blue-400" strokeColor="stroke-blue-500" size="w-16 h-16 lg:w-40 lg:h-40" radius={45} fontSize="text-sm lg:text-3xl" strokeWidth={6} /></div>
             </div>
         </Card>
         {/* 5. Capacity / Load */}
