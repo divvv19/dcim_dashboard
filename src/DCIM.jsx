@@ -690,10 +690,12 @@ export default function DCIM_Preview() {
                     {activeTab === 'pdu' && <PDUView data={pduData} />}
                     {activeTab === 'environment' && <EnvironmentView data={envData} />}
 
-                    <div className="mt-8 pt-6 border-t border-slate-800 flex justify-between items-center text-xs text-slate-500">
-                        <span>DCIM Dashboard v1.0.2</span>
-                        <span>© 2025 Data Center Systems</span>
-                    </div>
+
+                </div>
+                {/* Footer */}
+                <div className="h-8 border-t border-slate-800 bg-slate-900/80 backdrop-blur-md flex justify-between items-center px-4 lg:px-8 text-[10px] lg:text-xs text-slate-500 shrink-0">
+                    <span>DCIM Dashboard v1.0.2</span>
+                    <span>&copy; 2025 Data Center Systems</span>
                 </div>
             </main>
 
