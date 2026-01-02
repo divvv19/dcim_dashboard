@@ -286,20 +286,20 @@ const UPSView = ({ data }) => {
                 <Card title="Power Flow Topology" className="flex-1 min-h-[480px]">
                     <div className="flex flex-col h-full py-6 px-4">
                         <div className="flex items-start justify-between relative z-10 px-2 sm:px-8">
-                            <div className="flex flex-col items-center gap-3 w-20 lg:w-32 z-20">
-                                <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-lg bg-slate-800 border-2 border-slate-600 flex items-center justify-center shadow-lg"><Plug className={isBatteryMode ? "text-slate-600" : "text-emerald-400 drop-shadow-[0_0_8px_currentColor]"} size={24} /></div>
+                            <div className="flex flex-col items-center gap-3 w-20 lg:w-24 xl:w-32 z-20">
+                                <div className="w-12 h-12 lg:w-14 lg:h-14 xl:w-16 xl:h-16 rounded-lg bg-slate-800 border-2 border-slate-600 flex items-center justify-center shadow-lg"><Plug className={isBatteryMode ? "text-slate-600" : "text-emerald-400 drop-shadow-[0_0_8px_currentColor]"} size={24} /></div>
                                 <span className="text-xs lg:text-sm font-bold text-slate-300 mt-2">MAINS</span>
                             </div>
-                            <div className="flex-1 h-1 bg-slate-700 mx-2 mt-6 lg:mt-8 relative rounded-full">{!isBatteryMode && (<div className="absolute inset-0 bg-emerald-500/50 animate-progress-bar shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>)}</div>
-                            <div className="flex flex-col items-center gap-2 w-28 lg:w-40 z-20 -mt-2 lg:-mt-4">
-                                <div className={`w-24 h-24 lg:w-32 lg:h-32 rounded-xl border-2 ${isBatteryMode ? 'border-orange-500 bg-orange-900/10' : 'border-blue-500 bg-blue-900/10'} flex flex-col items-center justify-center bg-slate-900 shadow-[0_0_15px_rgba(0,0,0,0.3)]`}>
+                            <div className="flex-1 h-1 bg-slate-700 mx-2 mt-6 lg:mt-7 xl:mt-8 relative rounded-full">{!isBatteryMode && (<div className="absolute inset-0 bg-emerald-500/50 animate-progress-bar shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>)}</div>
+                            <div className="flex flex-col items-center gap-2 w-28 lg:w-32 xl:w-40 z-20 -mt-2 lg:-mt-4">
+                                <div className={`w-24 h-24 lg:w-28 lg:h-28 xl:w-32 xl:h-32 rounded-xl border-2 ${isBatteryMode ? 'border-orange-500 bg-orange-900/10' : 'border-blue-500 bg-blue-900/10'} flex flex-col items-center justify-center bg-slate-900 shadow-[0_0_15px_rgba(0,0,0,0.3)]`}>
                                     <Zap className={isBatteryMode ? "text-orange-500 animate-pulse" : "text-blue-400 drop-shadow-[0_0_8px_currentColor]"} size={40} />
                                     <span className="mt-2 text-xs font-mono text-slate-400">Mode: {data.upsState}</span>
                                 </div>
                             </div>
-                            <div className="flex-1 h-1 bg-slate-700 mx-2 mt-6 lg:mt-8 relative rounded-full"><div className={`absolute inset-0 ${isBatteryMode ? 'bg-orange-500/50' : 'bg-blue-500/50'} animate-progress-bar shadow-[0_0_10px_currentColor]`}></div></div>
-                            <div className="flex flex-col items-center gap-3 w-20 lg:w-32 z-20">
-                                <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-lg bg-slate-800 border-2 border-slate-600 flex items-center justify-center shadow-lg"><Server className="text-cyan-400 drop-shadow-[0_0_8px_currentColor]" size={24} /></div>
+                            <div className="flex-1 h-1 bg-slate-700 mx-2 mt-6 lg:mt-7 xl:mt-8 relative rounded-full"><div className={`absolute inset-0 ${isBatteryMode ? 'bg-orange-500/50' : 'bg-blue-500/50'} animate-progress-bar shadow-[0_0_10px_currentColor]`}></div></div>
+                            <div className="flex flex-col items-center gap-3 w-20 lg:w-24 xl:w-32 z-20">
+                                <div className="w-12 h-12 lg:w-14 lg:h-14 xl:w-16 xl:h-16 rounded-lg bg-slate-800 border-2 border-slate-600 flex items-center justify-center shadow-lg"><Server className="text-cyan-400 drop-shadow-[0_0_8px_currentColor]" size={24} /></div>
                                 <span className="text-xs lg:text-sm font-bold text-slate-300 mt-2">LOAD</span>
                             </div>
                         </div>
