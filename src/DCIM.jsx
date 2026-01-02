@@ -290,14 +290,14 @@ const UPSView = ({ data }) => {
                                 <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-lg bg-slate-800 border-2 border-slate-600 flex items-center justify-center shadow-lg"><Plug className={isBatteryMode ? "text-slate-600" : "text-emerald-400 drop-shadow-[0_0_8px_currentColor]"} size={24} /></div>
                                 <span className="text-xs lg:text-sm font-bold text-slate-300 mt-2">MAINS</span>
                             </div>
-                            <div className="flex-1 h-1 bg-slate-700 mx-2 mt-8 relative rounded-full">{!isBatteryMode && (<div className="absolute inset-0 bg-emerald-500/50 animate-progress-bar shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>)}</div>
+                            <div className="flex-1 h-1 bg-slate-700 mx-2 mt-6 lg:mt-8 relative rounded-full">{!isBatteryMode && (<div className="absolute inset-0 bg-emerald-500/50 animate-progress-bar shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>)}</div>
                             <div className="flex flex-col items-center gap-2 w-28 lg:w-40 z-20 -mt-2 lg:-mt-4">
                                 <div className={`w-24 h-24 lg:w-32 lg:h-32 rounded-xl border-2 ${isBatteryMode ? 'border-orange-500 bg-orange-900/10' : 'border-blue-500 bg-blue-900/10'} flex flex-col items-center justify-center bg-slate-900 shadow-[0_0_15px_rgba(0,0,0,0.3)]`}>
                                     <Zap className={isBatteryMode ? "text-orange-500 animate-pulse" : "text-blue-400 drop-shadow-[0_0_8px_currentColor]"} size={40} />
                                     <span className="mt-2 text-xs font-mono text-slate-400">Mode: {data.upsState}</span>
                                 </div>
                             </div>
-                            <div className="flex-1 h-1 bg-slate-700 mx-2 mt-8 relative rounded-full"><div className={`absolute inset-0 ${isBatteryMode ? 'bg-orange-500/50' : 'bg-blue-500/50'} animate-progress-bar shadow-[0_0_10px_currentColor]`}></div></div>
+                            <div className="flex-1 h-1 bg-slate-700 mx-2 mt-6 lg:mt-8 relative rounded-full"><div className={`absolute inset-0 ${isBatteryMode ? 'bg-orange-500/50' : 'bg-blue-500/50'} animate-progress-bar shadow-[0_0_10px_currentColor]`}></div></div>
                             <div className="flex flex-col items-center gap-3 w-20 lg:w-32 z-20">
                                 <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-lg bg-slate-800 border-2 border-slate-600 flex items-center justify-center shadow-lg"><Server className="text-cyan-400 drop-shadow-[0_0_8px_currentColor]" size={24} /></div>
                                 <span className="text-xs lg:text-sm font-bold text-slate-300 mt-2">LOAD</span>
@@ -361,21 +361,21 @@ const EnvironmentView = ({ data }) => (
 );
 
 const PDUView = ({ data }) => (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full content-start">
+    <div className="grid grid-cols-2 gap-2 lg:gap-6 h-full content-start">
         {['pdu1', 'pdu2'].map((pduKey, idx) => (
             <Card key={pduKey} title={`PDU-${idx + 1} Status`}>
-                <div className="space-y-4">
-                    <div className="flex items-center justify-center py-6">
-                        <div className={`w-24 h-24 rounded-full border-4 ${idx === 0 ? 'border-cyan-500' : 'border-blue-500'} flex items-center justify-center bg-slate-900/50 shadow-[0_0_20px_rgba(0,0,0,0.3)]`}>
-                            <Plug size={40} className={idx === 0 ? "text-cyan-400" : "text-blue-400"} />
+                <div className="space-y-2 lg:space-y-4">
+                    <div className="flex items-center justify-center py-2 lg:py-6">
+                        <div className={`w-14 h-14 lg:w-24 lg:h-24 rounded-full border-2 lg:border-4 ${idx === 0 ? 'border-cyan-500' : 'border-blue-500'} flex items-center justify-center bg-slate-900/50 shadow-[0_0_20px_rgba(0,0,0,0.3)]`}>
+                            <Plug className={`w-6 h-6 lg:w-10 lg:h-10 ${idx === 0 ? "text-cyan-400" : "text-blue-400"}`} />
                         </div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-1 lg:space-y-2">
                         <ValueDisplay label="Voltage" value={data[pduKey].voltage} unit="V" icon={Zap} color={idx === 0 ? "text-cyan-400" : "text-blue-400"} />
                         <ValueDisplay label="Current" value={data[pduKey].current} unit="A" icon={Activity} color={idx === 0 ? "text-cyan-400" : "text-blue-400"} />
                         <ValueDisplay label="Frequency" value={data[pduKey].frequency} unit="Hz" icon={Activity} color="text-slate-400" />
-                        <ValueDisplay label="Active Energy" value={data[pduKey].energy} unit="kWh" icon={Zap} color="text-green-400" />
-                        <ValueDisplay label="Power Factor" value={data[pduKey].powerFactor} unit="" icon={Activity} color="text-orange-400" />
+                        <ValueDisplay label="Act Energy" value={data[pduKey].energy} unit="kWh" icon={Zap} color="text-green-400" />
+                        <ValueDisplay label="PF" value={data[pduKey].powerFactor} unit="" icon={Activity} color="text-orange-400" />
                     </div>
                 </div>
             </Card>
