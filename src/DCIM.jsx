@@ -290,20 +290,20 @@ const UPSView = ({ data }) => {
                                 <div className="w-12 h-12 lg:w-14 lg:h-14 xl:w-16 xl:h-16 rounded-lg bg-slate-800 border-2 border-slate-600 flex items-center justify-center shadow-lg"><Plug className={isBatteryMode ? "text-slate-600" : "text-emerald-400 drop-shadow-[0_0_8px_currentColor]"} size={24} /></div>
                                 <span className="text-xs lg:text-sm font-bold text-slate-300 mt-2">MAINS</span>
                             </div>
-                            <div className="flex-1 h-1 bg-slate-700 mx-2 mt-6 lg:mt-7 xl:mt-8 relative rounded-full">{!isBatteryMode && (<div className="absolute inset-0 bg-emerald-500/50 animate-progress-bar shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>)}</div>
+                            <div className="flex-1 h-1 bg-slate-700 mt-6 lg:mt-7 xl:mt-8 relative">{!isBatteryMode && (<div className="absolute inset-0 bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>)}</div>
                             <div className="flex flex-col items-center gap-2 w-28 lg:w-32 xl:w-40 z-20 -mt-2 lg:-mt-4">
-                                <div className={`w-24 h-24 lg:w-28 lg:h-28 xl:w-32 xl:h-32 rounded-xl border-2 ${isBatteryMode ? 'border-orange-500 bg-orange-900/10' : 'border-blue-500 bg-blue-900/10'} flex flex-col items-center justify-center bg-slate-900 shadow-[0_0_15px_rgba(0,0,0,0.3)]`}>
-                                    <Zap className={isBatteryMode ? "text-orange-500 animate-pulse" : "text-blue-400 drop-shadow-[0_0_8px_currentColor]"} size={40} />
+                                <div className={`w-24 h-24 lg:w-28 lg:h-28 xl:w-32 xl:h-32 rounded-xl border-2 ${isBatteryMode ? 'border-orange-500 bg-orange-900/10' : 'border-emerald-500 bg-emerald-900/10'} flex flex-col items-center justify-center bg-slate-900 shadow-[0_0_15px_rgba(0,0,0,0.3)]`}>
+                                    <Zap className={isBatteryMode ? "text-orange-500 animate-pulse" : "text-emerald-400 drop-shadow-[0_0_8px_currentColor]"} size={40} />
                                     <span className="mt-2 text-xs font-mono text-slate-400">Mode: {data.upsState}</span>
                                 </div>
                             </div>
-                            <div className="flex-1 h-1 bg-slate-700 mx-2 mt-6 lg:mt-7 xl:mt-8 relative rounded-full"><div className={`absolute inset-0 ${isBatteryMode ? 'bg-orange-500/50' : 'bg-blue-500/50'} animate-progress-bar shadow-[0_0_10px_currentColor]`}></div></div>
+                            <div className="flex-1 h-1 bg-slate-700 mt-6 lg:mt-7 xl:mt-8 relative"><div className={`absolute inset-0 ${isBatteryMode ? 'bg-orange-500' : 'bg-emerald-500'} shadow-[0_0_10px_currentColor]`}></div></div>
                             <div className="flex flex-col items-center gap-3 w-20 lg:w-24 xl:w-32 z-20">
                                 <div className="w-12 h-12 lg:w-14 lg:h-14 xl:w-16 xl:h-16 rounded-lg bg-slate-800 border-2 border-slate-600 flex items-center justify-center shadow-lg"><Server className="text-cyan-400 drop-shadow-[0_0_8px_currentColor]" size={24} /></div>
                                 <span className="text-xs lg:text-sm font-bold text-slate-300 mt-2">LOAD</span>
                             </div>
                         </div>
-                        <div className="flex-1 flex justify-center relative min-h-[40px] lg:min-h-[60px]"><div className={`w-1 h-full ${isBatteryMode ? 'bg-orange-500 animate-pulse' : 'bg-slate-700'}`}></div></div>
+                        <div className="flex-1 flex justify-center relative min-h-[40px] lg:min-h-[60px]"><div className={`w-1 h-full ${isBatteryMode ? 'bg-orange-500' : 'bg-slate-700'}`}></div></div>
                         <div className="flex justify-center pb-4">
                             <div className="w-full max-w-[200px] lg:w-48 p-4 rounded-xl bg-slate-800 border border-slate-700 flex items-center gap-4 shadow-lg z-20 relative">
                                 <Battery className={isBatteryMode ? "text-orange-400" : "text-green-400 drop-shadow-[0_0_8px_currentColor]"} size={28} />
@@ -577,37 +577,19 @@ export default function DCIM_Preview() {
         return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
     }, []);
 
-    // Keyboard Shortcuts
+    // Keyboard Shortcuts (Fullscreen Only)
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
-            switch (e.key.toLowerCase()) {
-                case 'h':
-                    setActiveTab('home');
-                    showToast('Shortcut: Home View', 'info');
-                    break;
-                case 'f':
-                    toggleFullscreen();
-                    break;
-                case 's':
-                    setShowSim(prev => {
-                        const newState = !prev;
-                        showToast(`Simulator: ${newState ? 'ON' : 'OFF'}`, 'info');
-                        return newState;
-                    });
-                    break;
-                case 'e':
-                    handleExport();
-                    break;
-                default:
-                    break;
+            if (e.key.toLowerCase() === 'f') {
+                toggleFullscreen();
             }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [activeTab, showSim, coolingData, upsData, envData, pduData]); // Dependencies for export and toggles
+    }, []);
 
     return (
         <div className={`min-h-screen transition-colors duration-500 font-sans text-slate-200 overflow-hidden flex ${envData.fireStatus === 'Alarm' ? 'bg-red-950' : 'bg-[#0b1120]'}`}>
@@ -663,9 +645,7 @@ export default function DCIM_Preview() {
                         <h2 className="text-lg font-medium text-slate-200 uppercase tracking-widest">{activeTab}</h2>
                     </div>
                     <div className="flex items-center gap-4">
-                        <button onClick={toggleFullscreen} className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors" title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}>
-                            {isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />} {isFullscreen ? 'Exit' : 'Full'}
-                        </button>
+
                         <button onClick={handleExport} className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors" title="Export Data"><Download size={14} /> Export</button>
                         <button onClick={() => { setShowSim(!showSim); showToast(`Simulator: ${!showSim ? 'ON' : 'OFF'}`, 'info'); }} className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors"><Settings size={14} /> Simulator</button>
                         <div className="flex items-center gap-2">
