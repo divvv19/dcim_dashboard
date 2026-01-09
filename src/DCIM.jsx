@@ -155,7 +155,7 @@ const HomeView = ({ coolingData, upsData, envData }) => (
                         <div className="text-[8px] lg:text-xs text-slate-400">Input</div>
                         <div className="px-1 py-0.5 lg:px-1.5 lg:py-1 bg-cyan-500 text-white text-[8px] lg:text-xs font-bold rounded min-w-[30px] lg:min-w-[40px] text-center shadow-[0_0_10px_rgba(6,182,212,0.5)]">{upsData.upsState === 'Mains' ? upsData.inputVoltage : 0}V</div>
                     </div>
-                    <div className="w-8 lg:flex-1 h-[2px] bg-slate-600 relative min-w-[10px]">
+                    <div className="w-8 lg:flex-1 h-[2px] bg-slate-600 relative min-w-[10px] mt-3 lg:mt-4">
                         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 lg:w-8 lg:h-8 border-2 border-slate-500 bg-slate-800 rounded flex items-center justify-center">
                             <Zap size={10} className="text-slate-400 lg:hidden" />
                             <Zap size={14} className="text-slate-400 hidden lg:block" />
