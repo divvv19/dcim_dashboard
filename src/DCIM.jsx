@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
     Thermometer, Wind, Zap, Droplets, DoorOpen, AlertTriangle,
     Activity, Server, Fan, Battery, Plug, Flame, Settings,
-    Clock, CheckCircle2, ArrowRight, Home, Menu, Download, Maximize, Minimize, ArrowUp, ArrowDown, Info, Check
+    Clock, CheckCircle2, ArrowRight, Home, Menu, Download, Maximize, Minimize, ArrowUp, ArrowDown, Info, Check, Cloud, Sun
 } from 'lucide-react';
 
 // --- COMPONENT LIBRARY ---
@@ -393,6 +393,9 @@ export default function DCIM_Preview() {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
+    // New Outdoor Temp State
+    const [outdoorTemp, setOutdoorTemp] = useState(18.2);
+
     // Set sidebar open on desktop by default
     useEffect(() => {
         if (window.innerWidth >= 1024) {
@@ -446,6 +449,14 @@ export default function DCIM_Preview() {
     // Real-time graph simulation (Random Walk)
     React.useEffect(() => {
         const interval = setInterval(() => {
+            // Update Outdoor Temp
+            setOutdoorTemp(prev => {
+                let next = prev + (Math.random() - 0.5) * 0.1;
+                if (next > 30) next -= 0.2;
+                if (next < 10) next += 0.2;
+                return parseFloat(next.toFixed(1));
+            });
+
             // Update Environment
             setEnvData(prev => {
                 const last = prev.history[prev.history.length - 1];
@@ -645,6 +656,20 @@ export default function DCIM_Preview() {
                         <h2 className="text-lg font-medium text-slate-200 uppercase tracking-widest">{activeTab}</h2>
                     </div>
                     <div className="flex items-center gap-4">
+
+                        {/* OUTDOOR TEMP WIDGET */}
+                        <div className="hidden md:flex items-center gap-3 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
+                            <div className={`p-1.5 rounded-full ${outdoorTemp < 22 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-orange-500/20 text-orange-400'}`}>
+                                {outdoorTemp < 22 ? <Wind size={14} /> : <Sun size={14} />}
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] text-slate-400 uppercase tracking-wider leading-none">Outside</span>
+                                <span className="text-sm font-bold font-mono leading-none flex items-center gap-1">
+                                    {outdoorTemp}°C
+                                    {outdoorTemp < 22 && <span className="text-[8px] bg-emerald-500 text-white px-1 rounded ml-1">FREE COOLING</span>}
+                                </span>
+                            </div>
+                        </div>
 
                         <button onClick={handleExport} className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors" title="Export Data"><Download size={14} /> Export</button>
                         <button onClick={() => { setShowSim(!showSim); showToast(`Simulator: ${!showSim ? 'ON' : 'OFF'}`, 'info'); }} className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors"><Settings size={14} /> Simulator</button>
