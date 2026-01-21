@@ -287,7 +287,7 @@ const UPSView = ({ data }) => {
                     <div className="flex flex-col h-full py-6 px-4">
                         <div className="flex items-start justify-between relative z-10 px-2 sm:px-8">
                             <div className="flex flex-col items-center gap-3 w-20 lg:w-24 xl:w-32 z-20">
-                                <div className="w-12 h-12 lg:w-14 lg:h-14 xl:w-16 xl:h-16 rounded-lg bg-slate-800 border-2 border-slate-600 flex items-center justify-center shadow-lg"><Plug className={isBatteryMode ? "text-slate-600" : "text-emerald-400 drop-shadow-[0_0_8px_currentColor]"} size={24} /></div>
+                                <div className={`w-12 h-12 lg:w-14 lg:h-14 xl:w-16 xl:h-16 rounded-lg bg-slate-800 border-2 ${!isBatteryMode ? 'border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'border-slate-600'} flex items-center justify-center shadow-lg`}><Plug className={isBatteryMode ? "text-slate-600" : "text-emerald-400 drop-shadow-[0_0_8px_currentColor]"} size={24} /></div>
                                 <span className="text-xs lg:text-sm font-bold text-slate-300 mt-2">MAINS</span>
                             </div>
                             <div className="flex-1 h-1 bg-slate-700 mt-6 lg:mt-7 xl:mt-8 relative">{!isBatteryMode && (<div className="absolute inset-0 bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>)}</div>
@@ -299,13 +299,13 @@ const UPSView = ({ data }) => {
                             </div>
                             <div className="flex-1 h-1 bg-slate-700 mt-6 lg:mt-7 xl:mt-8 relative"><div className={`absolute inset-0 ${isBatteryMode ? 'bg-orange-500' : 'bg-emerald-500'} shadow-[0_0_10px_currentColor]`}></div></div>
                             <div className="flex flex-col items-center gap-3 w-20 lg:w-24 xl:w-32 z-20">
-                                <div className="w-12 h-12 lg:w-14 lg:h-14 xl:w-16 xl:h-16 rounded-lg bg-slate-800 border-2 border-slate-600 flex items-center justify-center shadow-lg"><Server className="text-cyan-400 drop-shadow-[0_0_8px_currentColor]" size={24} /></div>
+                                <div className={`w-12 h-12 lg:w-14 lg:h-14 xl:w-16 xl:h-16 rounded-lg bg-slate-800 border-2 ${isBatteryMode ? 'border-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.3)]' : 'border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]'} flex items-center justify-center shadow-lg`}><Server className="text-cyan-400 drop-shadow-[0_0_8px_currentColor]" size={24} /></div>
                                 <span className="text-xs lg:text-sm font-bold text-slate-300 mt-2">LOAD</span>
                             </div>
                         </div>
                         <div className="flex-1 flex justify-center relative min-h-[40px] lg:min-h-[60px]"><div className={`w-1 h-full ${isBatteryMode ? 'bg-orange-500' : 'bg-slate-700'}`}></div></div>
                         <div className="flex justify-center pb-4">
-                            <div className="w-full max-w-[200px] lg:w-48 p-4 rounded-xl bg-slate-800 border border-slate-700 flex items-center gap-4 shadow-lg z-20 relative">
+                            <div className={`w-full max-w-[200px] lg:w-48 p-4 rounded-xl bg-slate-800 border ${isBatteryMode ? 'border-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.3)]' : 'border-slate-700'} flex items-center gap-4 shadow-lg z-20 relative`}>
                                 <Battery className={isBatteryMode ? "text-orange-400" : "text-green-400 drop-shadow-[0_0_8px_currentColor]"} size={28} />
                                 <div><div className="text-[10px] lg:text-xs text-slate-400 uppercase">Battery Bank</div><div className="text-sm lg:text-lg font-mono font-bold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">{data.batteryVoltage}V</div></div>
                             </div>
