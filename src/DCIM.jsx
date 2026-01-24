@@ -13,7 +13,7 @@ const Card = ({ title, children, className = "", alert = false }) => (
         : 'bg-slate-800/80 border-slate-700/50 shadow-lg'
         } ${className} flex flex-col overflow-hidden`}>
         {title && (
-            <h3 className={`text-[10px] lg:text-sm font-medium uppercase tracking-wider px-2 lg:px-4 py-2 lg:py-3 border-b border-white/5 bg-white/5 flex items-center gap-2 ${alert ? 'text-red-200' : 'text-slate-400'
+            <h3 className={`text-[10px] lg:text-sm font-medium uppercase tracking-wider px-2 lg:px-4 py-2 lg:py-3 border-b border-white/5 bg-gradient-to-r from-white/10 to-transparent flex items-center gap-2 ${alert ? 'text-red-200' : 'text-slate-400'
                 }`}>
                 {title}
             </h3>
