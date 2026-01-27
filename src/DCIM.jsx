@@ -39,13 +39,8 @@ const ValueDisplay = ({ label, value, unit, icon: Icon, color = "text-cyan-400" 
         prevValueRef.current = value;
     }, [value]);
 
-    const handleCopy = () => {
-        navigator.clipboard.writeText(value);
-        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: `Copied: ${value}${unit ? unit : ''}`, type: 'success' } }));
-    };
-
     return (
-        <div onClick={handleCopy} className="flex items-center justify-between bg-slate-900/80 p-3 rounded-lg border border-slate-700/30 mb-2 last:mb-0 cursor-pointer hover:bg-slate-800 transition-colors group">
+        <div className="flex items-center justify-between bg-slate-900/80 p-3 rounded-lg border border-slate-700/30 mb-2 last:mb-0 transition-colors group">
             <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-full bg-slate-800 ${color} bg-opacity-20`}>
                     {Icon && <Icon size={20} className={color} />}
