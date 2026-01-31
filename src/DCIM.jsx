@@ -378,9 +378,110 @@ const PDUView = ({ data }) => (
     </div>
 );
 
+// --- RACK DESIGNER VIEW ---
+const RackDesignerView = ({ rackItems, handleDrop, handleRemove, handleDragStart, assetLibrary, totalPower, totalWeight, totalU }) => {
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full content-start">
+            <Card title="Available Assets" className="lg:col-span-3 h-full">
+                <div className="space-y-3">
+                    {assetLibrary.map(asset => (
+                        <div
+                            key={asset.id}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, asset)}
+                            className={`p-3 rounded-lg border border-slate-700 bg-slate-800/50 cursor-grab active:cursor-grabbing hover:bg-slate-700 transition flex items-center justify-between group`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded flex items-center justify-center ${asset.color} text-white shadow-lg`}>
+                                    <asset.icon size={20} />
+                                </div>
+                                <div>
+                                    <div className="text-sm font-bold text-slate-200">{asset.name}</div>
+                                    <div className="text-[10px] text-slate-400">{asset.u}U | {asset.power}kW | {asset.weight}kg</div>
+                                </div>
+                            </div>
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="w-6 h-6 rounded bg-slate-600 flex items-center justify-center text-xs">+</div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </Card>
+
+            <Card title="Server Rack 01 (42U)" className="lg:col-span-6 min-h-[800px] flex justify-center bg-slate-900">
+                <div className="w-full max-w-md bg-black border-x-4 border-slate-700 relative p-1 shadow-2xl">
+                    <div className="absolute left-0 top-0 bottom-0 w-4 bg-slate-800 border-r border-slate-600/50 flex flex-col justify-around py-2">
+                        {Array(42).fill(0).map((_, i) => <div key={i} className="text-[8px] text-slate-500 text-center font-mono">{42 - i}</div>)}
+                    </div>
+                    <div className="absolute right-0 top-0 bottom-0 w-4 bg-slate-800 border-l border-slate-600/50 flex flex-col justify-around py-2">
+                        {Array(42).fill(0).map((_, i) => <div key={i} className="text-[8px] text-slate-500 text-center font-mono">{42 - i}</div>)}
+                    </div>
+
+                    <div className="mx-6 flex flex-col h-full border-x border-dashed border-slate-800/50">
+                        {Array(42).fill(null).map((_, i) => {
+                            const uIndex = 41 - i;
+                            const item = rackItems[uIndex];
+                            const onDragOver = (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; e.currentTarget.classList.add('bg-cyan-500/20'); };
+                            const onDragLeave = (e) => { e.currentTarget.classList.remove('bg-cyan-500/20'); };
+                            const onDrop = (e) => { e.preventDefault(); e.currentTarget.classList.remove('bg-cyan-500/20'); handleDrop(uIndex); };
+                            const isAnchor = item && item.type === 'anchor';
+
+                            return (
+                                <div
+                                    key={uIndex}
+                                    className={`h-[1.75rem] border-b border-slate-800 relative group transition-colors flex items-center justify-center text-[9px] text-slate-700 select-none ${!item ? 'hover:bg-slate-800' : ''}`}
+                                    onDragOver={!item ? onDragOver : undefined}
+                                    onDragLeave={!item ? onDragLeave : undefined}
+                                    onDrop={!item ? onDrop : undefined}
+                                    onContextMenu={(e) => { e.preventDefault(); handleRemove(uIndex); }}
+                                >
+                                    {!item && <span>Slot {uIndex + 1}</span>}
+                                    {isAnchor && (
+                                        <div
+                                            className={`absolute top-0 left-0 right-0 z-10 m-[1px] rounded shadow-lg flex items-center px-4 gap-3 ${item.color} border-t border-white/20`}
+                                            style={{ height: `calc(${item.u * 1.75}rem - 2px)` }}
+                                        >
+                                            <item.icon size={16} className="text-white/80" />
+                                            <span className="font-bold text-white text-xs truncate">{item.name}</span>
+                                            <div className="ml-auto text-[9px] text-white/50">{item.power}kW</div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </Card>
+
+            <Card title="Rack Metrics" className="lg:col-span-3 h-full">
+                <div className="space-y-6">
+                    <div className="text-center">
+                        <div className="text-sm text-slate-400 mb-2">Total Power Load</div>
+                        <CircularGauge value={(totalPower / 12 * 100).toFixed(1)} label={`${totalPower} / 12 kW`} color="text-cyan-400" strokeColor="stroke-cyan-500" size="w-32 h-32" />
+                    </div>
+                    <div className="space-y-4 px-4">
+                        <div>
+                            <div className="flex justify-between text-xs mb-1 text-slate-400"><span>Weight (Max 1000kg)</span><span>{totalWeight} kg</span></div>
+                            <div className="h-2 bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-blue-500 transition-all duration-500" style={{ width: `${totalWeight / 1000 * 100}%` }}></div></div>
+                        </div>
+                        <div>
+                            <div className="flex justify-between text-xs mb-1 text-slate-400"><span>U-Space Used</span><span>{totalU} / 42 U</span></div>
+                            <div className="h-2 bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${totalU / 42 * 100}%` }}></div></div>
+                        </div>
+                    </div>
+                    <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700/50 text-xs text-slate-400 leading-relaxed">
+                        <div className="flex gap-2 mb-2"><Info size={14} className="text-cyan-400 shrink-0" /> <span>Tip: Drag assets from left library.</span></div>
+                        <div className="flex gap-2"><ArrowDown size={14} className="text-red-400 shrink-0" /> <span>Right-click asset to remove.</span></div>
+                    </div>
+                </div>
+            </Card>
+        </div>
+    );
+};
+
 // --- MAIN APP ---
 
-export default function DCIM_Preview() {
+export default function DCIM() {
     const [activeTab, setActiveTab] = useState('home');
     const [showSim, setShowSim] = useState(false);
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -597,41 +698,103 @@ export default function DCIM_Preview() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
-    return (
-        <div className={`min-h-screen transition-colors duration-500 font-sans text-slate-200 overflow-hidden flex ${envData.fireStatus === 'Alarm' ? 'bg-red-950' : 'bg-[#0b1120]'}`}>
+    // --- RACK DESIGNER LOGIC ---
+    const [rackItems, setRackItems] = useState(Array(42).fill(null));
+    const [draggedAsset, setDraggedAsset] = useState(null);
 
-            {/* Sidebar */}
+    const assetLibrary = [
+        { id: 'srv-1u', name: 'Server 1U', u: 1, power: 0.4, weight: 15, color: 'bg-blue-600', icon: Server },
+        { id: 'srv-2u', name: 'Server 2U', u: 2, power: 0.8, weight: 28, color: 'bg-blue-700', icon: Server },
+        { id: 'srv-4u', name: 'Blade Chassis 4U', u: 4, power: 2.5, weight: 80, color: 'bg-slate-700', icon: Server },
+        { id: 'ups-2u', name: 'UPS 2U', u: 2, power: 0.1, weight: 35, color: 'bg-orange-600', icon: Battery },
+        { id: 'sw-1u', name: 'Switch 1U', u: 1, power: 0.15, weight: 5, color: 'bg-cyan-600', icon: Activity },
+    ];
+
+    const handleDragStart = (e, asset) => {
+        setDraggedAsset(asset);
+        e.dataTransfer.effectAllowed = 'copy';
+    };
+
+    const handleDrop = (index) => {
+        if (!draggedAsset) return;
+
+        // Check bounds (don't overflow top)
+        if (index + 1 < draggedAsset.u) return;
+
+        // Check collision
+        let collision = false;
+        for (let i = 0; i < draggedAsset.u; i++) {
+            if (rackItems[index - i]) collision = true;
+        }
+        if (collision) {
+            showToast("Not enough space!", "error");
+            return;
+        }
+
+        const newRack = [...rackItems];
+        for (let i = 0; i < draggedAsset.u; i++) {
+            newRack[index - i] = { ...draggedAsset, type: i === 0 ? 'anchor' : 'filled', anchorId: index };
+        }
+
+        setRackItems(newRack);
+        setDraggedAsset(null);
+    };
+
+    const handleRemove = (index) => {
+        const item = rackItems[index];
+        if (!item) return;
+
+        const newRack = [...rackItems];
+        const anchorIndex = item.type === 'anchor' ? index : item.anchorId;
+        const anchorItem = newRack[anchorIndex];
+
+        if (!anchorItem) return;
+
+        for (let i = 0; i < anchorItem.u; i++) {
+            newRack[anchorIndex - i] = null;
+        }
+        setRackItems(newRack);
+    }
+
+    const placedAssets = rackItems.filter(i => i && i.type === 'anchor');
+    const totalPower = placedAssets.reduce((acc, curr) => acc + curr.power, 0).toFixed(2);
+    const totalWeight = placedAssets.reduce((acc, curr) => acc + curr.weight, 0);
+    const totalU = placedAssets.reduce((acc, curr) => acc + curr.u, 0);
+
+    return (
+        <div className={`min-h-screen transition-colors duration-500 font-sans text-slate-200 flex ${envData.fireStatus === 'Alarm' ? 'bg-red-950' : 'bg-[#0b1120]'}`}>
+
             {/* Sidebar Overlay for Mobile */}
             {isSidebarOpen && (
-                <div onClick={() => setIsSidebarOpen(false)} className="fixed inset-0 bg-black/50 z-20 lg:hidden backdrop-blur-sm"></div>
+                <div onClick={() => setIsSidebarOpen(false)} className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm"></div>
             )}
 
-            {/* Sidebar */}
-            <div className={`fixed lg:relative inset-y-0 left-0 z-30 ${isSidebarOpen ? 'w-64 translate-x-0' : 'w-64 -translate-x-full lg:w-0 lg:translate-x-0'} transition-transform duration-300 overflow-hidden flex flex-col backdrop-blur-md bg-slate-900/80 border-r border-slate-800 shadow-2xl lg:shadow-none`}>
-                <div className="p-6 flex items-center gap-3">
+            {/* Sidebar - Fixed Position */}
+            <aside className={`fixed inset-y-0 left-0 z-50 w-64 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} transition-transform duration-300 flex flex-col backdrop-blur-md bg-slate-900/90 border-r border-slate-800 shadow-2xl`}>
+                <div className="p-6 flex items-center gap-3 shrink-0">
                     <div className="w-8 h-8 rounded bg-linear-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20"><Server className="text-white" size={18} /></div>
                     <h1 className="text-xl font-bold tracking-tight text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]">DCIM</h1>
                     <div className="ml-auto flex items-center gap-2 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]">
                         <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                         </span>
                         <span className="text-[10px] font-bold text-emerald-400 tracking-wider">LIVE</span>
                     </div>
                 </div>
-                <nav className="flex-1 px-4 py-4 space-y-2">
-                    {[{ id: 'home', label: 'Home', icon: Home }, { id: 'cooling', label: 'Cooling', icon: Fan }, { id: 'ups', label: 'UPS Power', icon: Zap }, { id: 'pdu', label: 'PDU', icon: Plug }, { id: 'environment', label: 'Environment', icon: Droplets }].map(item => (
-                        <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === item.id ? 'bg-cyan-900/30 text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.2)]' : 'text-slate-400 hover:bg-slate-800'}`}>
+
+                <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto custom-scrollbar">
+                    {[{ id: 'home', label: 'Home', icon: Home }, { id: 'cooling', label: 'Cooling', icon: Fan }, { id: 'ups', label: 'UPS Power', icon: Zap }, { id: 'pdu', label: 'PDU', icon: Plug }, { id: 'environment', label: 'Environment', icon: Droplets }, { id: 'rack-designer', label: 'Rack Designer', icon: Server }].map(item => (
+                        <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === item.id ? 'bg-cyan-900/30 text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.2)] border-l-2 border-cyan-400' : 'text-slate-400 hover:bg-slate-800 border-l-2 border-transparent'}`}>
                             <item.icon size={20} className={activeTab === item.id ? "drop-shadow-[0_0_5px_currentColor]" : ""} />{item.label}
                         </button>
                     ))}
                 </nav>
 
-                {/* Time & Date Display */}
-                <div className="p-6 border-t border-slate-800 bg-slate-900/50">
+                <div className="p-6 border-t border-slate-800 bg-slate-900/50 shrink-0">
                     <div className="flex items-center gap-3 mb-1">
                         <Clock size={16} className="text-cyan-500" />
-                        <span className="text-xl font-mono font-bold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
+                        <span className="text-xl font-mono font-bold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.3)] tabular-nums">
                             {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                         </span>
                     </div>
@@ -639,27 +802,26 @@ export default function DCIM_Preview() {
                         {currentTime.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
                     </div>
                 </div>
-            </div>
+            </aside>
 
-            <main className="flex-1 relative z-10 flex flex-col h-screen overflow-hidden">
-                {/* Header */}
-                <header className="h-16 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between px-4 lg:px-8 shrink-0">
+            {/* Main Content - Pushed by Sidebar */}
+            <main className={`flex-1 flex flex-col min-h-screen transition-all duration-300 w-full lg:pl-64`}>
+                {/* Header - Sticky */}
+                <header className="sticky top-0 z-30 h-16 border-b border-slate-800/80 bg-slate-900/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-8 shrink-0">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-slate-400 hover:text-cyan-400 transition-colors p-1 rounded-md hover:bg-slate-800">
+                        <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-slate-400 hover:text-cyan-400 transition-colors p-1 rounded-md hover:bg-slate-800">
                             <Menu size={24} />
                         </button>
                         <h2 className="text-lg font-medium text-slate-200 uppercase tracking-widest">{activeTab}</h2>
                     </div>
                     <div className="flex items-center gap-4">
-
-                        {/* OUTDOOR TEMP WIDGET */}
                         <div className="hidden md:flex items-center gap-3 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
                             <div className={`p-1.5 rounded-full ${outdoorTemp < 22 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-orange-500/20 text-orange-400'}`}>
                                 {outdoorTemp < 22 ? <Wind size={14} /> : <Sun size={14} />}
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-[10px] text-slate-400 uppercase tracking-wider leading-none">Outside</span>
-                                <span className="text-sm font-bold font-mono leading-none flex items-center gap-1">
+                                <span className="text-sm font-bold font-mono leading-none flex items-center gap-1 tabular-nums">
                                     {outdoorTemp}°C
                                     {outdoorTemp < 22 && <span className="text-[8px] bg-emerald-500 text-white px-1 rounded ml-1">FREE COOLING</span>}
                                 </span>
@@ -669,32 +831,41 @@ export default function DCIM_Preview() {
                         <button onClick={handleExport} className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors" title="Export Data"><Download size={14} /> Export</button>
                         <button onClick={() => { setShowSim(!showSim); showToast(`Simulator: ${!showSim ? 'ON' : 'OFF'}`, 'info'); }} className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors"><Settings size={14} /> Simulator</button>
                         <div className="flex items-center gap-2">
-                            <span className={`w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] ${envData.fireStatus === 'Alarm' ? 'bg-red-500 animate-ping' : 'bg-green-500'}`}></span>
+                            <span className={`w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] ${envData.fireStatus === 'Alarm' ? 'bg-red-500 animate-ping' : 'bg-green-500 animate-pulse'}`}></span>
                             <span className="text-xs text-slate-400 uppercase font-bold">{envData.fireStatus === 'Alarm' ? 'CRITICAL ALARM' : 'SYSTEM NORMAL'}</span>
                         </div>
                     </div>
                 </header>
 
                 {showSim && (
-                    <div className="absolute top-20 right-8 w-64 bg-slate-800/90 backdrop-blur-xl border border-slate-600 rounded-xl p-4 z-50 shadow-2xl">
+                    <div className="fixed top-20 right-8 w-64 bg-slate-800/90 backdrop-blur-xl border border-slate-600 rounded-xl p-4 z-50 shadow-2xl">
                         <button onClick={toggleFire} className="w-full text-left px-3 py-2 rounded bg-red-500/20 text-red-200 text-xs border border-red-500/30 mb-2 hover:bg-red-500/30 transition-colors">Toggle Fire Alarm</button>
                         <button onClick={toggleUPS} className="w-full text-left px-3 py-2 rounded bg-orange-500/20 text-orange-200 text-xs border border-orange-500/30 mb-2 hover:bg-orange-500/30 transition-colors">Toggle UPS Battery</button>
                         <button onClick={toggleLeak} className="w-full text-left px-3 py-2 rounded bg-blue-500/20 text-blue-200 text-xs border border-blue-500/30 hover:bg-blue-500/30 transition-colors">Toggle Leak</button>
                     </div>
                 )}
 
-                <div className="flex-1 p-4 lg:p-8 overflow-y-auto custom-scrollbar">
+                <div className="flex-1 p-4 lg:p-8">
                     {activeTab === 'home' && <HomeView coolingData={coolingData} upsData={upsData} envData={envData} />}
                     {activeTab === 'cooling' && <CoolingView data={coolingData} />}
                     {activeTab === 'ups' && <UPSView data={upsData} />}
                     {activeTab === 'pdu' && <PDUView data={pduData} />}
                     {activeTab === 'environment' && <EnvironmentView data={envData} />}
-
-
+                    {activeTab === 'rack-designer' && <RackDesignerView
+                        rackItems={rackItems}
+                        handleDrop={handleDrop}
+                        handleRemove={handleRemove}
+                        handleDragStart={handleDragStart}
+                        assetLibrary={assetLibrary}
+                        totalPower={totalPower}
+                        totalWeight={totalWeight}
+                        totalU={totalU}
+                    />}
                 </div>
+
                 {/* Footer */}
                 <div className="h-8 border-t border-slate-800 bg-slate-900/80 backdrop-blur-md flex justify-between items-center px-4 lg:px-8 text-[10px] lg:text-xs text-slate-500 shrink-0">
-                    <span>DCIM Dashboard v1.0.2</span>
+                    <span>DCIM Dashboard v1.1.0</span>
                     <span>&copy; 2025 Data Center Systems</span>
                 </div>
             </main>
@@ -732,4 +903,4 @@ export default function DCIM_Preview() {
         </div>
     );
 
-}
+}
