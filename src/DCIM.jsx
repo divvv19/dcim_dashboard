@@ -230,20 +230,33 @@ const HomeView = ({ coolingData, upsData, envData }) => (
 const CoolingView = ({ data }) => (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full content-start">
         <div className="lg:col-span-8 grid grid-cols-1 gap-6">
-            <Card title="Cooling Unit Schematic" className="min-h-[350px] relative overflow-hidden">
+            <Card title="Cooling Unit Schematic" className="min-h-[350px] relative overflow-hidden group">
+
+                {/* Animated Airflow Overlay */}
+                <div className="absolute inset-0 pointer-events-none z-0 opacity-50">
+                    {/* Top Path (Return Air) - Left to Right */}
+                    <div className="absolute top-[20%] left-[10%] right-[10%] h-16 flex items-center overflow-hidden">
+                        <div className={`flex gap-16 ${data.fanStatus ? 'animate-airflow-right' : ''}`}>
+                            {[...Array(8)].map((_, i) => (
+                                <ArrowRight key={i} size={24} className="text-blue-500/30" />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-around gap-8 py-6">
                     <div className="flex flex-col items-center gap-4">
                         <span className="text-slate-400 text-sm">Return Air</span>
                         <div className="text-3xl font-mono font-bold text-blue-300 drop-shadow-[0_0_10px_rgba(147,197,253,0.5)]">{data.returnTemp}°C</div>
                         <Wind className={`text-slate-400 ${data.fanStatus ? 'animate-spin-slow' : ''}`} size={40} />
                     </div>
-                    <ArrowRight className="text-cyan-500/50 hidden md:block" />
-                    <div className="flex flex-col items-center gap-4 p-4 border border-dashed border-slate-600 rounded-xl bg-slate-900/30">
+
+                    <div className="flex flex-col items-center gap-4 p-4 border border-dashed border-slate-600 rounded-xl bg-slate-900/30 relative z-20 backdrop-blur-sm">
                         <Activity className={`text-cyan-400 ${data.compressorStatus ? 'animate-pulse' : 'opacity-30'}`} size={32} />
                         <span className="text-xs text-slate-500 uppercase">Compressor</span>
                         <StatusBadge active={data.compressorStatus} />
                     </div>
-                    <ArrowRight className="text-blue-300/50 hidden md:block" />
+
                     <div className="flex flex-col items-center gap-4">
                         <span className="text-slate-400 text-sm">Supply Air</span>
                         <div className="text-4xl font-mono font-bold text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.5)]">{data.supplyTemp}°C</div>
@@ -898,9 +911,11 @@ export default function DCIM() {
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(71, 85, 105, 0.8); border-radius: 3px; }
         .animate-progress-bar { animation: progress-bar 2s linear infinite; }
         .animate-spin-slow { animation: spin 3s linear infinite; }
+        .animate-airflow-right { animation: airflow-right 2s linear infinite; }
         @keyframes progress-bar { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-      `}</style>
+        @keyframes airflow-right { 0% { transform: translateX(-20px); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateX(20px); opacity: 0; } }
+    `}</style>
         </div>
     );
 
-}
+}
