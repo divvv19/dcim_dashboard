@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
     Thermometer, Wind, Zap, Droplets, DoorOpen, AlertTriangle,
     Activity, Server, Fan, Battery, Plug, Flame, Settings,
-    Clock, CheckCircle2, ArrowRight, Home, Menu, Download, Maximize, Minimize, ArrowUp, ArrowDown, Info, Check, Cloud, Sun
+    Clock, CheckCircle2, ArrowRight, Home, Menu, Download, Maximize, Minimize, ArrowUp, ArrowDown, Info, Check, Cloud, Sun, Wifi, WifiOff
 } from 'lucide-react';
+import { useRealtimeData } from './hooks/useRealtimeData';
 
 // --- COMPONENT LIBRARY ---
 
@@ -502,8 +503,7 @@ export default function DCIM() {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
-    // New Outdoor Temp State
-    const [outdoorTemp, setOutdoorTemp] = useState(18.2);
+
 
     // Set sidebar open on desktop by default
     useEffect(() => {
@@ -527,86 +527,30 @@ export default function DCIM() {
         return () => window.removeEventListener('show-toast', handleCustomToast);
     }, []);
 
-    // Mock State
-    const [coolingData, setCoolingData] = useState({ supplyTemp: 18.5, returnTemp: 24.2, compressorStatus: true, fanStatus: true, compressorRuntime: 1450, highRoomTemp: false });
-    const [upsData, setUpsData] = useState({ inputVoltage: 230.5, outputVoltage: 230.0, upsState: 'Mains', batteryVoltage: 260.4, chargingCurrent: 2.1, dischargingCurrent: 0.0 });
-    const [envData, setEnvData] = useState({
-        coldAisleTemp: 22.4,
-        coldAisleHum: 48,
-        hotAisleTemp: 32.4,
-        hotAisleHum: 30,
-        fireStatus: 'Normal',
-        leakageStatus: 'Normal',
-        frontDoorOpen: false,
-        backDoorOpen: false,
-        history: Array(60).fill(0).map((_, i) => ({
-            temp: 22 + Math.random() * 2,
-            hum: 45 + Math.random() * 5
-        }))
-    });
-    const [pduData, setPduData] = useState({
-        pdu1: { voltage: 230.1, current: 12.5, frequency: 50.0, energy: 1450.2, powerFactor: 0.98 },
-        pdu2: { voltage: 229.8, current: 11.8, frequency: 50.0, energy: 1320.5, powerFactor: 0.97 }
+    // Real-time Data Hook
+    const { data: realtimeData, isConnected } = useRealtimeData({
+        upsData: { inputVoltage: 0, outputVoltage: 0, upsState: 'Offline', batteryVoltage: 0, chargingCurrent: 0, dischargingCurrent: 0 },
+        coolingData: { supplyTemp: 0, returnTemp: 0, compressorStatus: false, fanStatus: false, highRoomTemp: false },
+        envData: { coldAisleTemp: 0, coldAisleHum: 0, hotAisleTemp: 0, hotAisleHum: 0, fireStatus: 'Normal', leakageStatus: 'Normal', frontDoorOpen: false, backDoorOpen: false, outdoorTemp: 18.2, history: [] },
+        pduData: { pdu1: { voltage: 0, current: 0, frequency: 0, energy: 0, powerFactor: 0 }, pdu2: { voltage: 0, current: 0, frequency: 0, energy: 0, powerFactor: 0 } }
     });
 
-    // Clock
-    useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-        return () => clearInterval(timer);
-    }, []);
+    // Destructure for easier usage.
+    if (!realtimeData) return <div className="p-10 text-red-500">Error: No Data Connection</div>;
+    const { upsData, coolingData, envData, pduData } = realtimeData;
 
-    // Real-time graph simulation (Random Walk)
-    React.useEffect(() => {
-        const interval = setInterval(() => {
-            // Update Outdoor Temp
-            setOutdoorTemp(prev => {
-                let next = prev + (Math.random() - 0.5) * 0.1;
-                if (next > 30) next -= 0.2;
-                if (next < 10) next += 0.2;
-                return parseFloat(next.toFixed(1));
-            });
+    // New Outdoor Temp State (Managed by Backend now, fallback for initial render)
+    const outdoorTemp = envData?.outdoorTemp || 18.2;
 
-            // Update Environment
-            setEnvData(prev => {
-                const last = prev.history[prev.history.length - 1];
-                let newTemp = last.temp + (Math.random() - 0.5) * 0.4;
-                if (newTemp > 25) newTemp -= 0.2;
-                if (newTemp < 21) newTemp += 0.2;
-
-                let newHum = last.hum + (Math.random() - 0.5) * 1.5;
-                if (newHum > 55) newHum -= 0.8;
-                if (newHum < 40) newHum += 0.8;
-
-                const newHistory = [...prev.history.slice(1), { temp: newTemp, hum: newHum }];
-                return {
-                    ...prev,
-                    coldAisleTemp: parseFloat(newTemp.toFixed(1)),
-                    coldAisleHum: Math.round(newHum),
-                    history: newHistory
-                };
-            });
-
-            // Update PDU (Voltage/Current fluctuation)
-            setPduData(prev => ({
-                pdu1: { ...prev.pdu1, voltage: parseFloat((prev.pdu1.voltage + (Math.random() - 0.5) * 0.2).toFixed(1)), current: parseFloat((prev.pdu1.current + (Math.random() - 0.5) * 0.1).toFixed(1)) },
-                pdu2: { ...prev.pdu2, voltage: parseFloat((prev.pdu2.voltage + (Math.random() - 0.5) * 0.2).toFixed(1)), current: parseFloat((prev.pdu2.current + (Math.random() - 0.5) * 0.1).toFixed(1)) }
-            }));
-
-            // Update UPS (Voltage fluctuation)
-            setUpsData(prev => ({
-                ...prev,
-                inputVoltage: parseFloat((prev.inputVoltage + (Math.random() - 0.5) * 0.3).toFixed(1)),
-                outputVoltage: parseFloat((prev.outputVoltage + (Math.random() - 0.5) * 0.1).toFixed(1))
-            }));
-
-        }, 1000);
-        return () => clearInterval(interval);
-    }, []);
+    // --- MOCK STATE & SIMULATION LOOP REMOVED (Now handled by Backend) ---
 
     // Sim Actions
-    const toggleFire = () => setEnvData(p => ({ ...p, fireStatus: p.fireStatus === 'Normal' ? 'Alarm' : 'Normal' }));
-    const toggleLeak = () => setEnvData(p => ({ ...p, leakageStatus: p.leakageStatus === 'Normal' ? 'Alarm' : 'Normal' }));
-    const toggleUPS = () => setUpsData(p => ({ ...p, upsState: p.upsState === 'Mains' ? 'Battery' : 'Mains' }));
+    // Note: These actions currently update LOCAL state which interacts poorly with the read-only hook stream.
+    // For now, they will appear to "flicker" back to backend state after 1 sec.
+    // Future Phase: Send commands to backend.
+    const toggleFire = () => showToast("Fire Alarm Simulation: Please implement backend command.", "info");
+    const toggleLeak = () => showToast("Leak Simulation: Please implement backend command.", "info");
+    const toggleUPS = () => showToast("UPS Test: Please implement backend command.", "info");
 
     // Export Data Logic
     const handleExport = () => {
@@ -789,10 +733,10 @@ export default function DCIM() {
                     <h1 className="text-xl font-bold tracking-tight text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]">DCIM</h1>
                     <div className="ml-auto flex items-center gap-2 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]">
                         <span className="relative flex h-2 w-2">
-                            <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            <span className={`animate-pulse absolute inline-flex h-full w-full rounded-full opacity-75 ${isConnected ? 'bg-emerald-400' : 'bg-red-400'}`}></span>
+                            <span className={`relative inline-flex rounded-full h-2 w-2 ${isConnected ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
                         </span>
-                        <span className="text-[10px] font-bold text-emerald-400 tracking-wider">LIVE</span>
+                        <span className={`text-[10px] font-bold tracking-wider ${isConnected ? 'text-emerald-400' : 'text-red-400'}`}>{isConnected ? 'LIVE' : 'OFFLINE'}</span>
                     </div>
                 </div>
 
