@@ -31,9 +31,21 @@ A modern, high-fidelity dashboard for monitoring and managing data center infras
     npm install
     ```
 
-3.  **Run the development server**
+3.  **Run in Development Mode** (Requires two terminals)
+
+    **Terminal 1: Backend API**
     ```bash
+    cd server
+    npm install
     npm run dev
     ```
+    *Runs on http://localhost:5000*
+
+    **Terminal 2: Frontend Dashboard**
+    ```bash
+    npm install
+    npm run dev
+    ```
+    *Runs on http://localhost:5173*
 
 
