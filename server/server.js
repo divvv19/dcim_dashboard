@@ -161,12 +161,10 @@ setInterval(async () => {
         // Update History & Environment
         const lastHistory = stateStore.envData.history[stateStore.envData.history.length - 1];
         let newTemp = lastHistory.temp + (Math.random() - 0.5) * 0.4;
-        if (newTemp > 25) newTemp -= 0.2;
-        if (newTemp < 21) newTemp += 0.2;
+        newTemp = Math.max(21, Math.min(25, newTemp));
 
         let newHum = lastHistory.hum + (Math.random() - 0.5) * 1.5;
-        if (newHum > 55) newHum -= 0.8;
-        if (newHum < 40) newHum += 0.8;
+        newHum = Math.max(40, Math.min(55, newHum));
 
         stateStore.envData.coldAisleTemp = parseFloat(newTemp.toFixed(1));
         stateStore.envData.coldAisleHum = Math.round(newHum);
@@ -174,12 +172,49 @@ setInterval(async () => {
         // Shift history
         stateStore.envData.history = [...stateStore.envData.history.slice(1), { temp: newTemp, hum: newHum }];
 
+        // Check for threshold limits and dispatch alerts
+        alertManager(stateStore);
+
         // Broadcast to all clients
         io.emit('dashboard:update', stateStore);
     } catch (err) {
         console.error("Polling error:", err);
     }
 }, 1000);
+
+// Alert Manager Logic
+const activeAlerts = new Set();
+function alertManager(state) {
+    const thresholds = [
+        { id: 'temp', condition: state.envData.coldAisleTemp > 24.5, message: `High Temp Warning: ${state.envData.coldAisleTemp}°C`, severity: 'error' },
+        { id: 'smoke', condition: state.envData.smokeDetected, message: 'CRITICAL: Smoke/Fire Detected!', severity: 'error' },
+        { id: 'leak', condition: state.envData.waterLeak, message: 'WARNING: Water Leak Detected!', severity: 'error' }
+    ];
+
+    thresholds.forEach(t => {
+        if (t.condition && !activeAlerts.has(t.id)) {
+            activeAlerts.add(t.id);
+            io.emit('system_alert', { severity: t.severity, message: t.message });
+        } else if (!t.condition && activeAlerts.has(t.id)) {
+            activeAlerts.delete(t.id);
+            io.emit('system_alert', { severity: 'success', message: `${t.id.toUpperCase()} Warning Cleared.` });
+        }
+    });
+}
+
+// Mock Test Endpoints
+app.post('/api/simulate/fire', (req, res) => {
+    stateStore.envData.smokeDetected = !stateStore.envData.smokeDetected;
+    stateStore.envData.fireStatus = stateStore.envData.smokeDetected ? 'Alarm' : 'Normal';
+    alertManager(stateStore);
+    res.sendStatus(200);
+});
+app.post('/api/simulate/leak', (req, res) => {
+    stateStore.envData.waterLeak = !stateStore.envData.waterLeak;
+    stateStore.envData.leakageStatus = stateStore.envData.waterLeak ? 'Alarm' : 'Normal';
+    alertManager(stateStore);
+    res.sendStatus(200);
+});
 
 io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);

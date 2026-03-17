@@ -555,13 +555,10 @@ export default function DCIM() {
 
     // --- MOCK STATE & SIMULATION LOOP REMOVED (Now handled by Backend) ---
 
-    // Sim Actions
-    // Note: These actions currently update LOCAL state which interacts poorly with the read-only hook stream.
-    // For now, they will appear to "flicker" back to backend state after 1 sec.
-    // Future Phase: Send commands to backend.
-    const toggleFire = () => showToast("Fire Alarm Simulation: Please implement backend command.", "info");
-    const toggleLeak = () => showToast("Leak Simulation: Please implement backend command.", "info");
-    const toggleUPS = () => showToast("UPS Test: Please implement backend command.", "info");
+    // Sim Actions (Triggers backend toggles)
+    const toggleFire = () => fetch('http://localhost:5000/api/simulate/fire', { method: 'POST' }).catch(() => showToast("Backend unreached.", "error"));
+    const toggleLeak = () => fetch('http://localhost:5000/api/simulate/leak', { method: 'POST' }).catch(() => showToast("Backend unreached.", "error"));
+    const toggleUPS = () => showToast("UPS Test: Backend toggle not implemented.", "info");
 
     // Export Data Logic
     const handleExport = () => {

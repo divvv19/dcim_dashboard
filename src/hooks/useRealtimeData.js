@@ -26,6 +26,10 @@ export const useRealtimeData = (initialState) => {
             setLastUpdated(new Date());
         });
 
+        socket.on('system_alert', (alert) => {
+            window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: alert.message, type: alert.severity } }));
+        });
+
         return () => {
             socket.disconnect();
         };
