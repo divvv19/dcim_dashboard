@@ -339,7 +339,7 @@ const UPSView = ({ data }) => {
 const EnvironmentView = ({ data }) => (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full content-start">
         <Card title="Aisle Conditions">
-            <div className="grid grid-cols-2 gap-4 h-full">
+            <div className="grid grid-cols-2 gap-4">
                 <div className="bg-blue-500/10 rounded-xl p-4 border border-blue-500/20 text-center shadow-[0_0_15px_rgba(59,130,246,0.1)]">
                     <span className="text-blue-200 font-bold text-sm uppercase block mb-2">Cold Aisle</span>
                     <div className="text-3xl font-mono text-blue-100 drop-shadow-[0_0_8px_rgba(191,219,254,0.6)]">{data.coldAisleTemp}°C</div>
@@ -349,6 +349,16 @@ const EnvironmentView = ({ data }) => (
                     <span className="text-orange-200 font-bold text-sm uppercase block mb-2">Hot Aisle</span>
                     <div className="text-3xl font-mono text-orange-100 drop-shadow-[0_0_8px_rgba(255,237,213,0.6)]">{data.hotAisleTemp}°C</div>
                     <div className="text-sm text-orange-400 mt-2">{data.hotAisleHum}% RH</div>
+                </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="bg-slate-900/50 rounded-xl p-3 border border-slate-700/50 text-center">
+                    <span className="text-slate-400 font-bold text-xs uppercase block mb-1">Airflow</span>
+                    <div className="text-xl font-mono text-white">{data.airflow} <span className="text-xs text-slate-500">CFM</span></div>
+                </div>
+                <div className="bg-slate-900/50 rounded-xl p-3 border border-slate-700/50 text-center">
+                    <span className="text-slate-400 font-bold text-xs uppercase block mb-1">Pressure</span>
+                    <div className="text-xl font-mono text-white">{data.pressure} <span className="text-xs text-slate-500">Pa</span></div>
                 </div>
             </div>
         </Card>
@@ -361,8 +371,9 @@ const EnvironmentView = ({ data }) => (
             </Card>
             <Card title="Critical Sensors">
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between"><span className="flex items-center gap-2 font-bold text-slate-300"><Flame size={18} className={data.fireStatus === 'Alarm' ? 'text-red-500' : ''} /> FIRE</span><StatusBadge active={data.fireStatus === 'Alarm'} labelOn="ALARM" labelOff="NORMAL" type="alarm" /></div>
-                    <div className="flex items-center justify-between"><span className="flex items-center gap-2 font-bold text-slate-300"><Droplets size={18} className={data.leakageStatus === 'Alarm' ? 'text-blue-400' : ''} /> LEAK</span><StatusBadge active={data.leakageStatus === 'Alarm'} labelOn="ALARM" labelOff="NORMAL" type="alarm" /></div>
+                    <div className="flex items-center justify-between"><span className="flex items-center gap-2 font-bold text-slate-300"><Flame size={18} className={data.smokeDetected ? 'text-red-500' : ''} /> SMOKE</span><StatusBadge active={data.smokeDetected} labelOn="ALARM" labelOff="NORMAL" type="alarm" /></div>
+                    <div className="flex items-center justify-between"><span className="flex items-center gap-2 font-bold text-slate-300"><Droplets size={18} className={data.waterLeak ? 'text-blue-400' : ''} /> LEAK CABLE</span><StatusBadge active={data.waterLeak} labelOn="ALARM" labelOff="NORMAL" type="alarm" /></div>
+                    <div className="flex items-center justify-between"><span className="flex items-center gap-2 font-bold text-slate-300"><Flame size={18} className={data.fireStatus === 'Alarm' ? 'text-red-500' : ''} /> FIRE SYSTEM</span><StatusBadge active={data.fireStatus === 'Alarm'} labelOn="ALARM" labelOff="NORMAL" type="alarm" /></div>
                 </div>
             </Card>
         </div>
@@ -531,7 +542,7 @@ export default function DCIM() {
     const { data: realtimeData, isConnected } = useRealtimeData({
         upsData: { inputVoltage: 0, outputVoltage: 0, upsState: 'Offline', batteryVoltage: 0, chargingCurrent: 0, dischargingCurrent: 0 },
         coolingData: { supplyTemp: 0, returnTemp: 0, compressorStatus: false, fanStatus: false, highRoomTemp: false },
-        envData: { coldAisleTemp: 0, coldAisleHum: 0, hotAisleTemp: 0, hotAisleHum: 0, fireStatus: 'Normal', leakageStatus: 'Normal', frontDoorOpen: false, backDoorOpen: false, outdoorTemp: 18.2, history: [] },
+        envData: { coldAisleTemp: 0, coldAisleHum: 0, hotAisleTemp: 0, hotAisleHum: 0, fireStatus: 'Normal', leakageStatus: 'Normal', frontDoorOpen: false, backDoorOpen: false, outdoorTemp: 18.2, airflow: 0, pressure: 0, smokeDetected: false, waterLeak: false, history: [] },
         pduData: { pdu1: { voltage: 0, current: 0, frequency: 0, energy: 0, powerFactor: 0 }, pdu2: { voltage: 0, current: 0, frequency: 0, energy: 0, powerFactor: 0 } }
     });
 

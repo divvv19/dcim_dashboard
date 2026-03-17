@@ -48,6 +48,10 @@ let stateStore = {
         frontDoorOpen: false,
         backDoorOpen: false,
         outdoorTemp: 18.2,
+        airflow: 3500.0,
+        pressure: 12.5,
+        smokeDetected: false,
+        waterLeak: false,
         history: Array(60).fill(0).map((_, i) => ({
             temp: 22 + Math.random() * 2,
             hum: 45 + Math.random() * 5
