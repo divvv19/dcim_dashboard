@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const ModbusRTU = require("modbus-serial");
 const snmp = require("net-snmp");
+const { InfluxDB, Point } = require('@influxdata/influxdb-client');
 
 const app = express();
 const server = http.createServer(app);
@@ -51,11 +52,7 @@ let stateStore = {
         airflow: 3500.0,
         pressure: 12.5,
         smokeDetected: false,
-        waterLeak: false,
-        history: Array(60).fill(0).map((_, i) => ({
-            temp: 22 + Math.random() * 2,
-            hum: 45 + Math.random() * 5
-        }))
+        waterLeak: false
     },
     pduData: {
         pdu1: { voltage: 230.1, current: 12.5, frequency: 50.0, energy: 1450.2, powerFactor: 0.98 },
@@ -124,6 +121,16 @@ class SNMPWrapper {
     }
 }
 
+// Setup InfluxDB
+const INFLUX_URL = process.env.INFLUX_URL || 'http://localhost:8086';
+const INFLUX_TOKEN = process.env.INFLUX_TOKEN || 'dev-token';
+const INFLUX_ORG = process.env.INFLUX_ORG || 'dcim';
+const INFLUX_BUCKET = process.env.INFLUX_BUCKET || 'sensors';
+
+const influxDB = new InfluxDB({ url: INFLUX_URL, token: INFLUX_TOKEN });
+const writeApi = influxDB.getWriteApi(INFLUX_ORG, INFLUX_BUCKET, 's');
+const queryApi = influxDB.getQueryApi(INFLUX_ORG);
+
 // Hardware Integrations
 const pduModbus = new ModbusWrapper(process.env.TARGET_PDU_IP || '127.0.0.1');
 const upsSnmp = new SNMPWrapper(process.env.TARGET_UPS_IP || '127.0.0.1');
@@ -158,22 +165,32 @@ setInterval(async () => {
         if (nextOutdoor < 10) nextOutdoor += 0.2;
         stateStore.envData.outdoorTemp = parseFloat(nextOutdoor.toFixed(1));
 
-        // Update History & Environment
-        const lastHistory = stateStore.envData.history[stateStore.envData.history.length - 1];
-        let newTemp = lastHistory.temp + (Math.random() - 0.5) * 0.4;
+        // Update synthetic values for development
+        let newTemp = stateStore.envData.coldAisleTemp + (Math.random() - 0.5) * 0.4;
         newTemp = Math.max(21, Math.min(25, newTemp));
 
-        let newHum = lastHistory.hum + (Math.random() - 0.5) * 1.5;
+        let newHum = stateStore.envData.coldAisleHum + (Math.random() - 0.5) * 1.5;
         newHum = Math.max(40, Math.min(55, newHum));
 
         stateStore.envData.coldAisleTemp = parseFloat(newTemp.toFixed(1));
         stateStore.envData.coldAisleHum = Math.round(newHum);
 
-        // Shift history
-        stateStore.envData.history = [...stateStore.envData.history.slice(1), { temp: newTemp, hum: newHum }];
-
         // Check for threshold limits and dispatch alerts
         alertManager(stateStore);
+
+        // Write to InfluxDB Time-Series
+        try {
+            const point = new Point('environment')
+                .floatField('temperature', stateStore.envData.coldAisleTemp)
+                .floatField('humidity', stateStore.envData.coldAisleHum)
+                .floatField('airflow', stateStore.envData.airflow)
+                .floatField('pressure', stateStore.envData.pressure);
+            
+            writeApi.writePoint(point);
+            await writeApi.flush();
+        } catch (e) {
+            // Ignore if Influx is offline during dev Phase 1
+        }
 
         // Broadcast to all clients
         io.emit('dashboard:update', stateStore);
@@ -221,6 +238,27 @@ io.on('connection', (socket) => {
 
     // Send immediate snapshot on connection
     socket.emit('dashboard:update', stateStore);
+
+    socket.on('request_history', async () => {
+        const fluxQuery = `
+            from(bucket: "${INFLUX_BUCKET}")
+            |> range(start: -1h)
+            |> filter(fn: (r) => r._measurement == "environment")
+            |> aggregateWindow(every: 1m, fn: mean, createEmpty: false)
+            |> yield(name: "mean")
+        `;
+        try {
+            const rows = [];
+            for await (const {values, tableMeta} of queryApi.iterateRows(fluxQuery)) {
+                const o = tableMeta.toObject(values);
+                rows.push({ time: o._time, value: o._value, field: o._field });
+            }
+            socket.emit('history_data', rows);
+        } catch (e) {
+            // Return empty if flux fails or no points
+            socket.emit('history_data', []);
+        }
+    });
 
     socket.on('disconnect', () => {
         console.log('Client disconnected:', socket.id);
