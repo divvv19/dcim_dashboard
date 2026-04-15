@@ -1,0 +1,72 @@
+{
+  "phase": "01",
+  "plans": [
+    {
+      "id": "01-01",
+      "wave": 1,
+      "autonomous": true,
+      "objective": "Replace the simulation loop in `server/server.js` with real `modbus-serial` and `net-snmp` integrations to fetch data from PDUs, UPS, and CRAC units.",
+      "files_modified": [
+        "server/server.js",
+        "package.json"
+      ],
+      "task_count": 4,
+      "has_summary": false
+    },
+    {
+      "id": "01-02",
+      "wave": 2,
+      "autonomous": true,
+      "objective": "Expand the `envData` model to include Airflow, Air Pressure, Smoke, and Water Leak contact closure sensors on both the backend generator and frontend UI views.",
+      "files_modified": [
+        "server/server.js",
+        "src/DCIM.jsx"
+      ],
+      "task_count": 3,
+      "has_summary": false
+    },
+    {
+      "id": "01-03",
+      "wave": 2,
+      "autonomous": true,
+      "objective": "Implement backend logic to detect threshold breaches (e.g., high temp, water leak) and push real-time alerts to the frontend with distinct severity levels.",
+      "files_modified": [
+        "server/server.js",
+        "src/DCIM.jsx"
+      ],
+      "task_count": 3,
+      "has_summary": false
+    },
+    {
+      "id": "01-04",
+      "wave": 3,
+      "autonomous": true,
+      "objective": "Integrate a time-series database (e.g., InfluxDB) to store historical sensor data, replacing the transient array memory logic in `server.js`.",
+      "files_modified": [
+        "server/server.js",
+        "package.json"
+      ],
+      "task_count": 4,
+      "has_summary": false
+    }
+  ],
+  "waves": {
+    "1": [
+      "01-01"
+    ],
+    "2": [
+      "01-02",
+      "01-03"
+    ],
+    "3": [
+      "01-04"
+    ]
+  },
+  "incomplete": [
+    "01-01",
+    "01-02",
+    "01-03",
+    "01-04"
+  ],
+  "has_checkpoints": false
+}

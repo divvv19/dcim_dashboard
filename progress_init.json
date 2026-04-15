@@ -1,0 +1,40 @@
+{
+  "executor_model": "sonnet",
+  "planner_model": "inherit",
+  "commit_docs": true,
+  "milestone_version": "v1.0",
+  "milestone_name": "milestone",
+  "phases": [
+    {
+      "number": "01",
+      "name": "real-time-backend-integration--core-environmental-monitoring",
+      "directory": ".planning/phases/01-real-time-backend-integration--core-environmental-monitoring",
+      "status": "in_progress",
+      "plan_count": 4,
+      "summary_count": 0,
+      "has_research": false
+    }
+  ],
+  "phase_count": 1,
+  "completed_count": 0,
+  "in_progress_count": 1,
+  "current_phase": {
+    "number": "01",
+    "name": "real-time-backend-integration--core-environmental-monitoring",
+    "directory": ".planning/phases/01-real-time-backend-integration--core-environmental-monitoring",
+    "status": "in_progress",
+    "plan_count": 4,
+    "summary_count": 0,
+    "has_research": false
+  },
+  "next_phase": null,
+  "paused_at": null,
+  "has_work_in_progress": true,
+  "project_exists": true,
+  "roadmap_exists": true,
+  "state_exists": true,
+  "state_path": ".planning/STATE.md",
+  "roadmap_path": ".planning/ROADMAP.md",
+  "project_path": ".planning/PROJECT.md",
+  "config_path": ".planning/config.json"
+}

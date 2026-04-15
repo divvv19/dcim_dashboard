@@ -1,0 +1,73 @@
+{
+  "milestones": [],
+  "phases": [
+    {
+      "number": "1",
+      "name": "Real-time Backend Integration & Core Environmental Monitoring",
+      "goal": "Connect the mock backend to real hardware protocols and set up historical databases.",
+      "depends_on": null,
+      "plan_count": 4,
+      "summary_count": 0,
+      "has_context": true,
+      "has_research": false,
+      "disk_status": "planned",
+      "roadmap_complete": false
+    },
+    {
+      "number": "2",
+      "name": "Power Chain & Efficiency Management",
+      "goal": "Analyze tracked data into meaningful efficiency metrics including PUE and Outlet level insights.",
+      "depends_on": null,
+      "plan_count": 0,
+      "summary_count": 0,
+      "has_context": false,
+      "has_research": false,
+      "disk_status": "no_directory",
+      "roadmap_complete": false
+    },
+    {
+      "number": "3",
+      "name": "Comprehensive Asset & Capacity Management",
+      "goal": "Upgrade \"Rack Designer\" with IT asset databases and detailed spatial/wiring maps.",
+      "depends_on": null,
+      "plan_count": 0,
+      "summary_count": 0,
+      "has_context": false,
+      "has_research": false,
+      "disk_status": "no_directory",
+      "roadmap_complete": false
+    },
+    {
+      "number": "4",
+      "name": "Advanced Visualization & Analytics",
+      "goal": "Render a modern 3D server room with overlapping analytical representations like heatmaps.",
+      "depends_on": null,
+      "plan_count": 0,
+      "summary_count": 0,
+      "has_context": false,
+      "has_research": false,
+      "disk_status": "no_directory",
+      "roadmap_complete": false
+    },
+    {
+      "number": "5",
+      "name": "Security & Access Control",
+      "goal": "Add physical data center security measures alongside software boundary scopes.",
+      "depends_on": null,
+      "plan_count": 0,
+      "summary_count": 0,
+      "has_context": false,
+      "has_research": false,
+      "disk_status": "no_directory",
+      "roadmap_complete": false
+    }
+  ],
+  "phase_count": 5,
+  "completed_phases": 0,
+  "total_plans": 4,
+  "total_summaries": 0,
+  "progress_percent": 0,
+  "current_phase": "1",
+  "next_phase": "2",
+  "missing_phase_details": null
+}
