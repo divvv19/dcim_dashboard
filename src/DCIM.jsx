@@ -1,12 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
-    Thermometer, Wind, Zap, Droplets, AlertTriangle,
+    Thermometer, Wind, Zap, Droplets, DoorOpen, AlertTriangle,
     Activity, Server, Fan, Battery, Plug, Flame, Settings,
-    Clock, CheckCircle2, ArrowRight, Home, Menu, Download, Maximize, Minimize, ArrowUp, ArrowDown, Info, Check, Sun
+    Clock, CheckCircle2, ArrowRight, Home, Menu, Download, Maximize, Minimize, ArrowUp, ArrowDown, Info, Check, Cloud, Sun, Wifi, WifiOff
 } from 'lucide-react';
 import { useRealtimeData } from './hooks/useRealtimeData';
-import DeviceOnboardingWizard from './components/onboarding/DeviceOnboardingWizard';
-import DeviceInventoryPanel from './components/onboarding/DeviceInventoryPanel';
 
 // --- COMPONENT LIBRARY ---
 
@@ -28,7 +26,19 @@ const Card = ({ title, children, className = "", alert = false }) => (
 );
 
 const ValueDisplay = ({ label, value, unit, icon: Icon, color = "text-cyan-400" }) => {
-    const trend = 'neutral';
+    const prevValueRef = useRef(value);
+    const [trend, setTrend] = useState('neutral');
+
+    useEffect(() => {
+        if (value > prevValueRef.current) {
+            setTrend('up');
+        } else if (value < prevValueRef.current) {
+            setTrend('down');
+        } else {
+            setTrend('neutral');
+        }
+        prevValueRef.current = value;
+    }, [value]);
 
     return (
         <div className="flex items-center justify-between bg-slate-900/80 p-3 rounded-lg border border-slate-700/30 mb-2 last:mb-0 transition-colors group">
@@ -483,29 +493,23 @@ const RackDesignerView = ({ rackItems, handleDrop, handleRemove, handleDragStart
     );
 };
 
-const OnboardingView = ({ inventory, isConnected, onSaved }) => (
-    <div className="space-y-6">
-        <DeviceOnboardingWizard inventory={inventory} onSaved={onSaved} />
-        <DeviceInventoryPanel inventory={inventory} isConnected={isConnected} />
-    </div>
-);
-
 // --- MAIN APP ---
 
 export default function DCIM() {
     const [activeTab, setActiveTab] = useState('home');
     const [showSim, setShowSim] = useState(false);
     const [currentTime, setCurrentTime] = useState(new Date());
-    const [isSidebarOpen, setIsSidebarOpen] = useState(() => (typeof window !== 'undefined' ? window.innerWidth >= 1024 : false));
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default closed on mobile, checked in useEffect for desktop
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
-    useEffect(() => {
-        const intervalId = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 1000);
 
-        return () => clearInterval(intervalId);
+
+    // Set sidebar open on desktop by default
+    useEffect(() => {
+        if (window.innerWidth >= 1024) {
+            setIsSidebarOpen(true);
+        }
     }, []);
 
     // Toast Logic
@@ -528,12 +532,12 @@ export default function DCIM() {
         upsData: { inputVoltage: 0, outputVoltage: 0, upsState: 'Offline', batteryVoltage: 0, chargingCurrent: 0, dischargingCurrent: 0 },
         coolingData: { supplyTemp: 0, returnTemp: 0, compressorStatus: false, fanStatus: false, highRoomTemp: false },
         envData: { coldAisleTemp: 0, coldAisleHum: 0, hotAisleTemp: 0, hotAisleHum: 0, fireStatus: 'Normal', leakageStatus: 'Normal', frontDoorOpen: false, backDoorOpen: false, outdoorTemp: 18.2, history: [] },
-        pduData: { pdu1: { voltage: 0, current: 0, frequency: 0, energy: 0, powerFactor: 0 }, pdu2: { voltage: 0, current: 0, frequency: 0, energy: 0, powerFactor: 0 } },
-        inventory: { transportMode: 'simulation', devices: [], buses: [], summary: { totalDevices: 0, onlineDevices: 0, pendingDevices: 0, offlineDevices: 0 } }
+        pduData: { pdu1: { voltage: 0, current: 0, frequency: 0, energy: 0, powerFactor: 0 }, pdu2: { voltage: 0, current: 0, frequency: 0, energy: 0, powerFactor: 0 } }
     });
 
     // Destructure for easier usage.
-    const { upsData, coolingData, envData, pduData, inventory } = realtimeData;
+    if (!realtimeData) return <div className="p-10 text-red-500">Error: No Data Connection</div>;
+    const { upsData, coolingData, envData, pduData } = realtimeData;
 
     // New Outdoor Temp State (Managed by Backend now, fallback for initial render)
     const outdoorTemp = envData?.outdoorTemp || 18.2;
@@ -737,7 +741,7 @@ export default function DCIM() {
                 </div>
 
                 <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto custom-scrollbar">
-                    {[{ id: 'home', label: 'Home', icon: Home }, { id: 'onboarding', label: 'Onboarding', icon: CheckCircle2 }, { id: 'cooling', label: 'Cooling', icon: Fan }, { id: 'ups', label: 'UPS Power', icon: Zap }, { id: 'pdu', label: 'PDU', icon: Plug }, { id: 'environment', label: 'Environment', icon: Droplets }, { id: 'rack-designer', label: 'Rack Designer', icon: Server }].map(item => (
+                    {[{ id: 'home', label: 'Home', icon: Home }, { id: 'cooling', label: 'Cooling', icon: Fan }, { id: 'ups', label: 'UPS Power', icon: Zap }, { id: 'pdu', label: 'PDU', icon: Plug }, { id: 'environment', label: 'Environment', icon: Droplets }, { id: 'rack-designer', label: 'Rack Designer', icon: Server }].map(item => (
                         <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === item.id ? 'bg-cyan-900/30 text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.2)] border-l-2 border-cyan-400' : 'text-slate-400 hover:bg-slate-800 border-l-2 border-transparent'}`}>
                             <item.icon size={20} className={activeTab === item.id ? "drop-shadow-[0_0_5px_currentColor]" : ""} />{item.label}
                         </button>
@@ -783,13 +787,6 @@ export default function DCIM() {
 
                         <button onClick={handleExport} className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors" title="Export Data"><Download size={14} /> Export</button>
                         <button onClick={() => { setShowSim(!showSim); showToast(`Simulator: ${!showSim ? 'ON' : 'OFF'}`, 'info'); }} className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors"><Settings size={14} /> Simulator</button>
-                        <button onClick={toggleFullscreen} className="hidden items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors md:flex">
-                            {isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />}
-                            {isFullscreen ? 'Window' : 'Fullscreen'}
-                        </button>
-                        <div className="hidden rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-cyan-200 md:block">
-                            {inventory?.transportMode ?? 'simulation'}
-                        </div>
                         <div className="flex items-center gap-2">
                             <span className={`w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] ${envData.fireStatus === 'Alarm' ? 'bg-red-500 animate-ping' : 'bg-green-500 animate-pulse'}`}></span>
                             <span className="text-xs text-slate-400 uppercase font-bold">{envData.fireStatus === 'Alarm' ? 'CRITICAL ALARM' : 'SYSTEM NORMAL'}</span>
@@ -807,7 +804,6 @@ export default function DCIM() {
 
                 <div className="flex-1 p-4 lg:p-8">
                     {activeTab === 'home' && <HomeView coolingData={coolingData} upsData={upsData} envData={envData} />}
-                    {activeTab === 'onboarding' && <OnboardingView inventory={inventory} isConnected={isConnected} onSaved={() => showToast('Device onboarding saved.', 'success')} />}
                     {activeTab === 'cooling' && <CoolingView data={coolingData} />}
                     {activeTab === 'ups' && <UPSView data={upsData} />}
                     {activeTab === 'pdu' && <PDUView data={pduData} />}

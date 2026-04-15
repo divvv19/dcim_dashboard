@@ -7,13 +7,13 @@
 
 ### Inventory
 
-- [x] **INVT-01**: Operator can register AC, UPS, and sensor devices with site and rack metadata.
+- [ ] **INVT-01**: Operator can register AC, UPS, and sensor devices with site and rack metadata.
 - [ ] **INVT-02**: Operator can view device online/offline and last-seen status in one inventory view.
 
 ### Integration
 
-- [x] **INTG-01**: Platform can poll supported devices over Modbus RTU using configurable intervals, timeouts, and per-device register profiles.
-- [x] **INTG-02**: Platform can manage shared RS485 bus configuration and collect telemetry for multiple slave devices on the same bus.
+- [ ] **INTG-01**: Platform can poll supported devices over Modbus using configurable intervals and timeouts.
+- [ ] **INTG-02**: Platform can collect supported device telemetry over SNMP using configurable profiles.
 - [ ] **INTG-03**: Platform can retry failed polls with backoff and surface connector health state.
 
 ### Telemetry
@@ -67,10 +67,10 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INVT-01 | Phase 1 | Completed |
+| INVT-01 | Phase 1 | Pending |
 | INVT-02 | Phase 2 | Pending |
-| INTG-01 | Phase 1 | Completed |
-| INTG-02 | Phase 1 | Completed |
+| INTG-01 | Phase 1 | Pending |
+| INTG-02 | Phase 1 | Pending |
 | INTG-03 | Phase 2 | Pending |
 | TELE-01 | Phase 2 | Pending |
 | TELE-02 | Phase 2 | Pending |
@@ -91,4 +91,4 @@
 
 ---
 *Requirements defined: 2026-03-11*
-*Last updated: 2026-04-15 after Phase 1 execution*
+*Last updated: 2026-03-11 after roadmap mapping*

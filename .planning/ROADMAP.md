@@ -1,12 +1,12 @@
 # Roadmap: MDC Protocol-Agnostic DCIM
 
-**Updated:** 2026-04-15  
+**Updated:** 2026-03-11  
 **Depth:** Standard  
 **v1 Coverage:** 16/16 requirements mapped
 
 ## Phases
 
-- [x] **Phase 1: Device Onboarding & RTU Connectivity** - Register MDC devices and establish Modbus RTU data collection over RS485 buses.
+- [ ] **Phase 1: Device Onboarding & Protocol Connectivity** - Register MDC devices and establish Modbus/SNMP data collection.
 - [ ] **Phase 2: Unified Telemetry Reliability** - Normalize multi-protocol telemetry and make data trust visible in realtime views.
 - [ ] **Phase 3: Alarm Lifecycle Core** - Deliver severity-based alarm creation, deduplication, and acknowledgment workflows.
 - [ ] **Phase 4: Alert Delivery & Audit Trail** - Route alarm transitions to external channels with delivery observability.
@@ -14,23 +14,23 @@
 
 ## Phase Details
 
-### Phase 1: Device Onboarding & RTU Connectivity
-**Goal**: Operators can onboard MDC assets onto RS485 buses and start live Modbus RTU data collection for each device type.  
+### Phase 1: Device Onboarding & Protocol Connectivity
+**Goal**: Operators can onboard MDC assets and start live protocol data collection for each device type.  
 **Depends on**: Nothing (first phase)  
 **Requirements**: INVT-01, INTG-01, INTG-02  
 **Success Criteria** (what must be TRUE):
 1. Operator can register AC, UPS, and sensor devices with site and rack metadata.
-2. Registered Modbus RTU devices are polled using configured RS485 bus settings, slave IDs, intervals, and timeouts.
-3. Multiple devices on the same RS485 bus can be collected safely through serialized polling and per-device register profiles.
-**Plans**: 5 completed
+2. Registered Modbus devices are polled using configured intervals/timeouts and produce telemetry samples.
+3. Registered SNMP devices are collected using configured SNMP profiles and produce telemetry samples.
+**Plans**: TBD
 
 ### Phase 2: Unified Telemetry Reliability
 **Goal**: Operators can trust unified realtime telemetry because connector resilience, freshness, and canonical modeling are in place.  
 **Depends on**: Phase 1  
 **Requirements**: INVT-02, INTG-03, TELE-01, TELE-02, TELE-03  
 **Success Criteria** (what must be TRUE):
-1. Dashboard shows realtime cooling, UPS, and environmental metrics from RTU-connected devices in one unified view.
-2. Raw Modbus RTU register values are transformed into a canonical telemetry schema used by downstream views.
+1. Dashboard shows realtime cooling, UPS, and environmental metrics from mixed protocols in one unified view.
+2. Raw Modbus/SNMP values are transformed into a canonical telemetry schema used by downstream views.
 3. Inventory view shows device online/offline and last-seen status from connector heartbeat activity.
 4. Failed polls retry with backoff and expose connector health state for troubleshooting.
 5. Telemetry that exceeds freshness thresholds is visibly marked stale.
@@ -70,7 +70,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Device Onboarding & RTU Connectivity | 5/5 | Completed | 2026-04-15 |
+| 1. Device Onboarding & Protocol Connectivity | 0/1 | Not started | - |
 | 2. Unified Telemetry Reliability | 0/1 | Not started | - |
 | 3. Alarm Lifecycle Core | 0/1 | Not started | - |
 | 4. Alert Delivery & Audit Trail | 0/1 | Not started | - |
