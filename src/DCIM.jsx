@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import {
     Thermometer, Wind, Zap, Droplets, DoorOpen, AlertTriangle,
     Activity, Server, Fan, Battery, Plug, Flame, Settings,
     Clock, CheckCircle2, ArrowRight, Home, Menu, Download, Maximize, Minimize, ArrowUp, ArrowDown, Info, Check, Cloud, Sun, Wifi, WifiOff
 } from 'lucide-react';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useRealtimeData } from './hooks/useRealtimeData';
 
 // --- COMPONENT LIBRARY ---
@@ -118,7 +119,7 @@ const Toast = ({ message, type = 'success', show }) => {
 
 // --- PAGE VIEWS (LAYOUTS) ---
 
-const HomeView = ({ coolingData, upsData, envData }) => (
+const HomeView = ({ coolingData, upsData, envData, systemData }) => (
     <div className="grid grid-cols-3 grid-rows-[auto_auto] gap-2 lg:gap-6 h-full pb-6">
 
         {/* 1. Alarm Status */}
@@ -205,22 +206,22 @@ const HomeView = ({ coolingData, upsData, envData }) => (
                 <div className="shrink-0"><CircularGauge value={85} label="Airflow" color="text-blue-400" strokeColor="stroke-blue-500" size="w-16 h-16 lg:w-40 lg:h-40" radius={45} fontSize="text-sm lg:text-3xl" strokeWidth={6} /></div>
             </div>
         </Card>
-        {/* 5. Capacity / Load */}
+        {/* 5. Capacity / Load — Now with live PUE */}
         <Card className="bg-slate-800/80">
             <div className="flex flex-col h-full justify-between py-2 lg:py-4">
                 <div className="flex flex-nowrap justify-between items-center gap-1 px-1 lg:px-2">
                     <CircularGauge value={49.9} label="UPS" color="text-blue-400" strokeColor="stroke-blue-500" size="w-10 h-10 lg:w-24 lg:h-24" radius={35} fontSize="text-[8px] lg:text-lg" strokeWidth={6} />
                     <CircularGauge value={35.2} label="COOL" color="text-cyan-400" strokeColor="stroke-cyan-500" size="w-10 h-10 lg:w-24 lg:h-24" radius={35} fontSize="text-[8px] lg:text-lg" strokeWidth={6} />
-                    <CircularGauge value={1.3} label="PUE" color="text-green-400" strokeColor="stroke-green-500" size="w-10 h-10 lg:w-24 lg:h-24" radius={35} fontSize="text-[8px] lg:text-lg" strokeWidth={6} />
+                    <CircularGauge value={systemData?.pue || 1.3} label="PUE" color="text-green-400" strokeColor="stroke-green-500" size="w-10 h-10 lg:w-24 lg:h-24" radius={35} fontSize="text-[8px] lg:text-lg" strokeWidth={6} />
                 </div>
                 <div className="mt-2 lg:mt-4 px-2 lg:px-4 space-y-2 lg:space-y-4">
                     <div>
-                        <div className="flex justify-between text-[8px] lg:text-xs mb-0.5 lg:mb-1"><span className="text-slate-400">Energy</span><span className="text-white font-mono drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">3468 kWh</span></div>
-                        <div className="h-1 lg:h-1.5 bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-cyan-500 w-[70%] shadow-[0_0_10px_rgba(6,182,212,0.6)]"></div></div>
+                        <div className="flex justify-between text-[8px] lg:text-xs mb-0.5 lg:mb-1"><span className="text-slate-400">IT Power</span><span className="text-white font-mono drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">{systemData?.itPowerKW || '—'} kW</span></div>
+                        <div className="h-1 lg:h-1.5 bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.6)] transition-all duration-500" style={{ width: `${Math.min(100, ((systemData?.itPowerKW || 0) / 15) * 100)}%` }}></div></div>
                     </div>
                     <div>
-                        <div className="flex justify-between text-[8px] lg:text-xs mb-0.5 lg:mb-1"><span className="text-slate-400">Power</span><span className="text-white font-mono drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">0.21 kW</span></div>
-                        <div className="h-1 lg:h-1.5 bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-green-500 w-[30%] shadow-[0_0_10px_rgba(34,197,94,0.6)]"></div></div>
+                        <div className="flex justify-between text-[8px] lg:text-xs mb-0.5 lg:mb-1"><span className="text-slate-400">Facility Power</span><span className="text-white font-mono drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">{systemData?.facilityPowerKW || '—'} kW</span></div>
+                        <div className="h-1 lg:h-1.5 bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)] transition-all duration-500" style={{ width: `${Math.min(100, ((systemData?.facilityPowerKW || 0) / 20) * 100)}%` }}></div></div>
                     </div>
                 </div>
             </div>
@@ -287,8 +288,22 @@ const CoolingView = ({ data }) => (
     </div>
 );
 
-const UPSView = ({ data }) => {
+const UPSView = ({ data, historyData }) => {
     const isBatteryMode = data.upsState === 'Battery';
+
+    // Memoize chart data from history
+    const chartData = useMemo(() => {
+        if (!historyData || historyData.length === 0) return [];
+        const facilityRows = historyData.filter(r => r.measurement === 'facility');
+        const grouped = {};
+        facilityRows.forEach(r => {
+            const t = r.time;
+            if (!grouped[t]) grouped[t] = { time: new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+            grouped[t][r.field] = parseFloat(r.value?.toFixed(2));
+        });
+        return Object.values(grouped).slice(-30);
+    }, [historyData]);
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
             <div className="lg:col-span-8 flex flex-col gap-6">
@@ -319,6 +334,28 @@ const UPSView = ({ data }) => {
                                 <div><div className="text-[10px] lg:text-xs text-slate-400 uppercase">Battery Bank</div><div className="text-sm lg:text-lg font-mono font-bold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">{data.batteryVoltage}V</div></div>
                             </div>
                         </div>
+                    </div>
+                </Card>
+                {/* Historical Power Chart (Phase 2 - 02-03) */}
+                <Card title="Facility Power History">
+                    <div className="h-48 lg:h-64 w-full">
+                        {chartData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                                    <XAxis dataKey="time" tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                                    <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                                    <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px' }} labelStyle={{ color: '#e2e8f0' }} />
+                                    <Line type="monotone" dataKey="it_power_kw" name="IT Power (kW)" stroke="#06b6d4" strokeWidth={2} dot={false} />
+                                    <Line type="monotone" dataKey="facility_power_kw" name="Facility (kW)" stroke="#22c55e" strokeWidth={2} dot={false} />
+                                    <Line type="monotone" dataKey="pue" name="PUE" stroke="#a78bfa" strokeWidth={2} dot={false} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-slate-500 text-sm">
+                                <Activity className="mr-2 animate-pulse" size={16} /> Collecting power history data...
+                            </div>
+                        )}
                     </div>
                 </Card>
             </div>
@@ -380,28 +417,102 @@ const EnvironmentView = ({ data }) => (
     </div>
 );
 
-const PDUView = ({ data }) => (
-    <div className="grid grid-cols-2 gap-2 lg:gap-6 h-full content-start">
-        {['pdu1', 'pdu2'].map((pduKey, idx) => (
-            <Card key={pduKey} title={`PDU-${idx + 1} Status`}>
-                <div className="space-y-2 lg:space-y-4">
-                    <div className="flex items-center justify-center py-2 lg:py-6">
-                        <div className={`w-14 h-14 lg:w-24 lg:h-24 rounded-full border-2 lg:border-4 ${idx === 0 ? 'border-cyan-500' : 'border-blue-500'} flex items-center justify-center bg-slate-900/50 shadow-[0_0_20px_rgba(0,0,0,0.3)]`}>
-                            <Plug className={`w-6 h-6 lg:w-10 lg:h-10 ${idx === 0 ? "text-cyan-400" : "text-blue-400"}`} />
+const PDUView = ({ data, historyData }) => {
+    // Memoize chart data from history for PDU power trends
+    const chartData = useMemo(() => {
+        if (!historyData || historyData.length === 0) return [];
+        const facilityRows = historyData.filter(r => r.measurement === 'facility');
+        const grouped = {};
+        facilityRows.forEach(r => {
+            const t = r.time;
+            if (!grouped[t]) grouped[t] = { time: new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+            grouped[t][r.field] = parseFloat(r.value?.toFixed(2));
+        });
+        return Object.values(grouped).slice(-30);
+    }, [historyData]);
+
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-6 h-full content-start">
+            {['pdu1', 'pdu2'].map((pduKey, idx) => (
+                <Card key={pduKey} title={`PDU-${idx + 1} Status`}>
+                    <div className="space-y-2 lg:space-y-4">
+                        <div className="flex items-center justify-center py-2 lg:py-4">
+                            <div className={`w-14 h-14 lg:w-20 lg:h-20 rounded-full border-2 lg:border-4 ${idx === 0 ? 'border-cyan-500' : 'border-blue-500'} flex items-center justify-center bg-slate-900/50 shadow-[0_0_20px_rgba(0,0,0,0.3)]`}>
+                                <Plug className={`w-6 h-6 lg:w-8 lg:h-8 ${idx === 0 ? "text-cyan-400" : "text-blue-400"}`} />
+                            </div>
                         </div>
+                        <div className="space-y-1 lg:space-y-2">
+                            <ValueDisplay label="Voltage" value={data[pduKey].voltage} unit="V" icon={Zap} color={idx === 0 ? "text-cyan-400" : "text-blue-400"} />
+                            <ValueDisplay label="Current" value={data[pduKey].current} unit="A" icon={Activity} color={idx === 0 ? "text-cyan-400" : "text-blue-400"} />
+                            <ValueDisplay label="Frequency" value={data[pduKey].frequency} unit="Hz" icon={Activity} color="text-slate-400" />
+                            <ValueDisplay label="Act Energy" value={data[pduKey].energy} unit="kWh" icon={Zap} color="text-green-400" />
+                            <ValueDisplay label="PF" value={data[pduKey].powerFactor} unit="" icon={Activity} color="text-orange-400" />
+                        </div>
+                        {/* Phase 2 - 02-01: Granular Outlet Grid */}
+                        {data[pduKey].outlets && data[pduKey].outlets.length > 0 && (
+                            <div className="mt-3">
+                                <div className="flex items-center justify-between mb-2 px-1">
+                                    <span className="text-[10px] lg:text-xs text-slate-400 uppercase font-semibold tracking-wider">Outlet Circuits ({data[pduKey].outlets.length})</span>
+                                    <div className="flex gap-2 text-[8px] lg:text-[10px]">
+                                        <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>Normal</span>
+                                        <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>High</span>
+                                        <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>Critical</span>
+                                    </div>
+                                </div>
+                                <div className="overflow-y-auto max-h-[260px] custom-scrollbar rounded-lg border border-slate-700/30 bg-slate-900/40">
+                                    <div className="grid grid-cols-4 lg:grid-cols-6 gap-1 p-2">
+                                        {data[pduKey].outlets.map((outlet) => {
+                                            const loadPercent = (outlet.current / outlet.maxCurrent) * 100;
+                                            const ledColor = outlet.status === 'critical'
+                                                ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]'
+                                                : outlet.status === 'high'
+                                                    ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]'
+                                                    : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]';
+                                            const borderColor = outlet.status === 'critical'
+                                                ? 'border-red-500/30'
+                                                : outlet.status === 'high'
+                                                    ? 'border-amber-500/30'
+                                                    : 'border-slate-700/30';
+                                            return (
+                                                <div key={outlet.id} className={`flex flex-col items-center p-1.5 rounded-lg bg-slate-800/60 border ${borderColor} transition-all hover:bg-slate-700/60 group`} title={`${outlet.label}: ${outlet.current}A / ${outlet.maxCurrent}A (${loadPercent.toFixed(0)}%)`}>
+                                                    <div className={`w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full ${ledColor} transition-all`}></div>
+                                                    <span className="text-[7px] lg:text-[9px] text-slate-500 mt-1 font-mono">{outlet.id}</span>
+                                                    <span className="text-[7px] lg:text-[9px] text-slate-400 font-mono font-bold group-hover:text-white transition-colors">{outlet.current}A</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                    <div className="space-y-1 lg:space-y-2">
-                        <ValueDisplay label="Voltage" value={data[pduKey].voltage} unit="V" icon={Zap} color={idx === 0 ? "text-cyan-400" : "text-blue-400"} />
-                        <ValueDisplay label="Current" value={data[pduKey].current} unit="A" icon={Activity} color={idx === 0 ? "text-cyan-400" : "text-blue-400"} />
-                        <ValueDisplay label="Frequency" value={data[pduKey].frequency} unit="Hz" icon={Activity} color="text-slate-400" />
-                        <ValueDisplay label="Act Energy" value={data[pduKey].energy} unit="kWh" icon={Zap} color="text-green-400" />
-                        <ValueDisplay label="PF" value={data[pduKey].powerFactor} unit="" icon={Activity} color="text-orange-400" />
-                    </div>
+                </Card>
+            ))}
+            {/* Phase 2 - 02-03: PDU Historical Power Chart */}
+            <Card title="PDU Power Trends" className="col-span-1 lg:col-span-2">
+                <div className="h-48 lg:h-64 w-full">
+                    {chartData.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                                <XAxis dataKey="time" tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                                <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                                <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px' }} labelStyle={{ color: '#e2e8f0' }} />
+                                <Line type="monotone" dataKey="pdu1_current" name="PDU-1 Current (A)" stroke="#06b6d4" strokeWidth={2} dot={false} />
+                                <Line type="monotone" dataKey="pdu2_current" name="PDU-2 Current (A)" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                                <Line type="monotone" dataKey="pue" name="PUE" stroke="#a78bfa" strokeWidth={2} dot={false} />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    ) : (
+                        <div className="flex items-center justify-center h-full text-slate-500 text-sm">
+                            <Activity className="mr-2 animate-pulse" size={16} /> Collecting PDU power history...
+                        </div>
+                    )}
                 </div>
             </Card>
-        ))}
-    </div>
-);
+        </div>
+    );
+};
 
 // --- RACK DESIGNER VIEW ---
 const RackDesignerView = ({ rackItems, handleDrop, handleRemove, handleDragStart, assetLibrary, totalPower, totalWeight, totalU }) => {
@@ -539,16 +650,16 @@ export default function DCIM() {
     }, []);
 
     // Real-time Data Hook
-    const { data: realtimeData, isConnected } = useRealtimeData({
+    const { data: realtimeData, isConnected, historyData } = useRealtimeData({
         upsData: { inputVoltage: 0, outputVoltage: 0, upsState: 'Offline', batteryVoltage: 0, chargingCurrent: 0, dischargingCurrent: 0 },
         coolingData: { supplyTemp: 0, returnTemp: 0, compressorStatus: false, fanStatus: false, highRoomTemp: false },
         envData: { coldAisleTemp: 0, coldAisleHum: 0, hotAisleTemp: 0, hotAisleHum: 0, fireStatus: 'Normal', leakageStatus: 'Normal', frontDoorOpen: false, backDoorOpen: false, outdoorTemp: 18.2, airflow: 0, pressure: 0, smokeDetected: false, waterLeak: false, history: [] },
-        pduData: { pdu1: { voltage: 0, current: 0, frequency: 0, energy: 0, powerFactor: 0 }, pdu2: { voltage: 0, current: 0, frequency: 0, energy: 0, powerFactor: 0 } }
+        pduData: { pdu1: { voltage: 0, current: 0, frequency: 0, energy: 0, powerFactor: 0, outlets: [] }, pdu2: { voltage: 0, current: 0, frequency: 0, energy: 0, powerFactor: 0, outlets: [] } },
+        system: { connected: false, status: 'OK', pue: 1.3, itPowerKW: 0, facilityPowerKW: 0 }
     });
 
-    // Destructure for easier usage.
     if (!realtimeData) return <div className="p-10 text-red-500">Error: No Data Connection</div>;
-    const { upsData, coolingData, envData, pduData } = realtimeData;
+    const { upsData, coolingData, envData, pduData, system: systemData } = realtimeData;
 
     // New Outdoor Temp State (Managed by Backend now, fallback for initial render)
     const outdoorTemp = envData?.outdoorTemp || 18.2;
@@ -811,10 +922,10 @@ export default function DCIM() {
                 )}
 
                 <div className="flex-1 p-4 lg:p-8">
-                    {activeTab === 'home' && <HomeView coolingData={coolingData} upsData={upsData} envData={envData} />}
+                    {activeTab === 'home' && <HomeView coolingData={coolingData} upsData={upsData} envData={envData} systemData={systemData} />}
                     {activeTab === 'cooling' && <CoolingView data={coolingData} />}
-                    {activeTab === 'ups' && <UPSView data={upsData} />}
-                    {activeTab === 'pdu' && <PDUView data={pduData} />}
+                    {activeTab === 'ups' && <UPSView data={upsData} historyData={historyData} />}
+                    {activeTab === 'pdu' && <PDUView data={pduData} historyData={historyData} />}
                     {activeTab === 'environment' && <EnvironmentView data={envData} />}
                     {activeTab === 'rack-designer' && <RackDesignerView
                         rackItems={rackItems}

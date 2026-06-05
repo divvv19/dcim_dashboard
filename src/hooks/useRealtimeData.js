@@ -7,6 +7,7 @@ export const useRealtimeData = (initialState) => {
     const [data, setData] = useState(initialState);
     const [isConnected, setIsConnected] = useState(false);
     const [lastUpdated, setLastUpdated] = useState(null);
+    const [historyData, setHistoryData] = useState([]);
 
     useEffect(() => {
         const socket = io(SOCKET_URL);
@@ -14,6 +15,8 @@ export const useRealtimeData = (initialState) => {
         socket.on('connect', () => {
             console.log('Connected to DCIM Backend');
             setIsConnected(true);
+            // Request historical data on connect
+            socket.emit('request_history');
         });
 
         socket.on('disconnect', () => {
@@ -26,14 +29,26 @@ export const useRealtimeData = (initialState) => {
             setLastUpdated(new Date());
         });
 
+        socket.on('history_data', (rows) => {
+            setHistoryData(rows);
+        });
+
         socket.on('system_alert', (alert) => {
             window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: alert.message, type: alert.severity } }));
         });
 
+        // Re-request history every 60 seconds for fresh chart data
+        const historyInterval = setInterval(() => {
+            if (socket.connected) {
+                socket.emit('request_history');
+            }
+        }, 60000);
+
         return () => {
+            clearInterval(historyInterval);
             socket.disconnect();
         };
     }, []);
 
-    return { data, isConnected, lastUpdated };
+    return { data, isConnected, lastUpdated, historyData };
 };
