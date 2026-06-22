@@ -13,6 +13,7 @@ const server = http.createServer(app);
 
 // Enable CORS for frontend
 app.use(cors());
+app.use(express.json());
 
 const io = new Server(server, {
     cors: {
@@ -70,6 +71,90 @@ let stateStore = {
         pdu2: { voltage: 229.8, current: 11.8, frequency: 50.0, energy: 1320.5, powerFactor: 0.97, outlets: generateOutlets(0.49) }
     }
 };
+
+// --- Phase 3: Model Library with Port Definitions ---
+const modelLibrary = [
+    {
+        modelId: 'dell-r640-1u', manufacturer: 'Dell', modelName: 'PowerEdge R640', deviceType: 'server',
+        heightU: 1, maxPowerW: 400, weight: 15, color: 'bg-blue-600', icon: 'Server',
+        frontPorts: [{ label: 'iDRAC', type: 'MGMT' }, { label: 'USB1', type: 'USB' }],
+        rearPorts: [{ label: 'ETH0', type: 'ETH' }, { label: 'ETH1', type: 'ETH' }, { label: 'ETH2', type: 'ETH' }, { label: 'ETH3', type: 'ETH' }, { label: 'PSU1', type: 'PWR' }, { label: 'PSU2', type: 'PWR' }]
+    },
+    {
+        modelId: 'dell-r740-2u', manufacturer: 'Dell', modelName: 'PowerEdge R740', deviceType: 'server',
+        heightU: 2, maxPowerW: 800, weight: 28, color: 'bg-blue-700', icon: 'Server',
+        frontPorts: [{ label: 'iDRAC', type: 'MGMT' }, { label: 'VGA', type: 'USB' }, { label: 'USB1', type: 'USB' }],
+        rearPorts: [{ label: 'ETH0', type: 'ETH' }, { label: 'ETH1', type: 'ETH' }, { label: 'ETH2', type: 'ETH' }, { label: 'ETH3', type: 'ETH' }, { label: 'SFP0', type: 'SFP' }, { label: 'SFP1', type: 'SFP' }, { label: 'PSU1', type: 'PWR' }, { label: 'PSU2', type: 'PWR' }]
+    },
+    {
+        modelId: 'hpe-bl460-4u', manufacturer: 'HPE', modelName: 'BladeSystem c7000', deviceType: 'server',
+        heightU: 4, maxPowerW: 2500, weight: 80, color: 'bg-indigo-700', icon: 'Server',
+        frontPorts: [{ label: 'Bay1', type: 'ETH' }, { label: 'Bay2', type: 'ETH' }, { label: 'Bay3', type: 'ETH' }, { label: 'Bay4', type: 'ETH' }],
+        rearPorts: [{ label: 'OA1', type: 'MGMT' }, { label: 'OA2', type: 'MGMT' }, { label: 'IC1', type: 'SFP' }, { label: 'IC2', type: 'SFP' }, { label: 'PSU1', type: 'PWR' }, { label: 'PSU2', type: 'PWR' }, { label: 'PSU3', type: 'PWR' }, { label: 'PSU4', type: 'PWR' }]
+    },
+    {
+        modelId: 'cisco-9300-1u', manufacturer: 'Cisco', modelName: 'Catalyst 9300-48T', deviceType: 'network',
+        heightU: 1, maxPowerW: 150, weight: 5, color: 'bg-cyan-600', icon: 'Activity',
+        frontPorts: [{ label: 'G1/0/1', type: 'ETH' }, { label: 'G1/0/2', type: 'ETH' }, { label: 'G1/0/3', type: 'ETH' }, { label: 'G1/0/4', type: 'ETH' }, { label: 'G1/0/5', type: 'ETH' }, { label: 'G1/0/6', type: 'ETH' }],
+        rearPorts: [{ label: 'UPLINK1', type: 'SFP' }, { label: 'UPLINK2', type: 'SFP' }, { label: 'MGMT', type: 'MGMT' }, { label: 'CONSOLE', type: 'USB' }, { label: 'PSU', type: 'PWR' }]
+    },
+    {
+        modelId: 'arista-7050-1u', manufacturer: 'Arista', modelName: '7050SX3-48YC', deviceType: 'network',
+        heightU: 1, maxPowerW: 180, weight: 7, color: 'bg-teal-600', icon: 'Activity',
+        frontPorts: [{ label: 'Et1', type: 'SFP' }, { label: 'Et2', type: 'SFP' }, { label: 'Et3', type: 'SFP' }, { label: 'Et4', type: 'SFP' }],
+        rearPorts: [{ label: 'MGMT', type: 'MGMT' }, { label: 'CONSOLE', type: 'USB' }, { label: 'PSU1', type: 'PWR' }, { label: 'PSU2', type: 'PWR' }]
+    },
+    {
+        modelId: 'pp-24port-1u', manufacturer: 'Leviton', modelName: 'Cat6A 24-Port Patch Panel', deviceType: 'network',
+        heightU: 1, maxPowerW: 0, weight: 2, color: 'bg-slate-600', icon: 'Activity',
+        frontPorts: [{ label: 'P1', type: 'ETH' }, { label: 'P2', type: 'ETH' }, { label: 'P3', type: 'ETH' }, { label: 'P4', type: 'ETH' }, { label: 'P5', type: 'ETH' }, { label: 'P6', type: 'ETH' }],
+        rearPorts: [{ label: 'R1', type: 'ETH' }, { label: 'R2', type: 'ETH' }, { label: 'R3', type: 'ETH' }, { label: 'R4', type: 'ETH' }, { label: 'R5', type: 'ETH' }, { label: 'R6', type: 'ETH' }]
+    },
+    {
+        modelId: 'apc-ups-2u', manufacturer: 'APC', modelName: 'Smart-UPS 3000VA', deviceType: 'power',
+        heightU: 2, maxPowerW: 100, weight: 35, color: 'bg-orange-600', icon: 'Battery',
+        frontPorts: [{ label: 'LCD', type: 'USB' }],
+        rearPorts: [{ label: 'IN', type: 'PWR' }, { label: 'OUT1', type: 'PWR' }, { label: 'OUT2', type: 'PWR' }, { label: 'OUT3', type: 'PWR' }, { label: 'OUT4', type: 'PWR' }, { label: 'MGMT', type: 'MGMT' }]
+    },
+    {
+        modelId: 'netapp-fas-2u', manufacturer: 'NetApp', modelName: 'FAS2750', deviceType: 'storage',
+        heightU: 2, maxPowerW: 600, weight: 25, color: 'bg-violet-600', icon: 'Server',
+        frontPorts: [{ label: 'Disk0', type: 'FC' }, { label: 'Disk1', type: 'FC' }, { label: 'Disk2', type: 'FC' }, { label: 'Disk3', type: 'FC' }],
+        rearPorts: [{ label: 'e0a', type: 'ETH' }, { label: 'e0b', type: 'ETH' }, { label: 'FC0', type: 'FC' }, { label: 'FC1', type: 'FC' }, { label: 'PSU1', type: 'PWR' }, { label: 'PSU2', type: 'PWR' }]
+    },
+    {
+        modelId: 'dell-me4-4u', manufacturer: 'Dell', modelName: 'PowerVault ME4084', deviceType: 'storage',
+        heightU: 4, maxPowerW: 1200, weight: 55, color: 'bg-violet-700', icon: 'Server',
+        frontPorts: [{ label: 'Disk0', type: 'FC' }, { label: 'Disk1', type: 'FC' }, { label: 'Disk2', type: 'FC' }, { label: 'Disk3', type: 'FC' }, { label: 'Disk4', type: 'FC' }],
+        rearPorts: [{ label: 'SAS0', type: 'SFP' }, { label: 'SAS1', type: 'SFP' }, { label: 'MGMT', type: 'MGMT' }, { label: 'PSU1', type: 'PWR' }, { label: 'PSU2', type: 'PWR' }]
+    },
+    {
+        modelId: 'palo-3200-1u', manufacturer: 'Palo Alto', modelName: 'PA-3260', deviceType: 'network',
+        heightU: 1, maxPowerW: 250, weight: 9, color: 'bg-red-600', icon: 'Activity',
+        frontPorts: [{ label: 'DP1', type: 'ETH' }, { label: 'DP2', type: 'ETH' }, { label: 'DP3', type: 'ETH' }, { label: 'DP4', type: 'ETH' }],
+        rearPorts: [{ label: 'MGMT', type: 'MGMT' }, { label: 'HA1', type: 'ETH' }, { label: 'HA2', type: 'ETH' }, { label: 'CONSOLE', type: 'USB' }, { label: 'PSU1', type: 'PWR' }, { label: 'PSU2', type: 'PWR' }]
+    },
+    {
+        modelId: 'supermicro-1u', manufacturer: 'Supermicro', modelName: 'SYS-1029U-TR4', deviceType: 'server',
+        heightU: 1, maxPowerW: 350, weight: 12, color: 'bg-blue-500', icon: 'Server',
+        frontPorts: [{ label: 'IPMI', type: 'MGMT' }, { label: 'USB', type: 'USB' }],
+        rearPorts: [{ label: 'ETH0', type: 'ETH' }, { label: 'ETH1', type: 'ETH' }, { label: 'ETH2', type: 'ETH' }, { label: 'ETH3', type: 'ETH' }, { label: 'PSU1', type: 'PWR' }, { label: 'PSU2', type: 'PWR' }]
+    },
+    {
+        modelId: 'juniper-ex-1u', manufacturer: 'Juniper', modelName: 'EX4300-48T', deviceType: 'network',
+        heightU: 1, maxPowerW: 160, weight: 6, color: 'bg-emerald-600', icon: 'Activity',
+        frontPorts: [{ label: 'ge-0/0/0', type: 'ETH' }, { label: 'ge-0/0/1', type: 'ETH' }, { label: 'ge-0/0/2', type: 'ETH' }, { label: 'ge-0/0/3', type: 'ETH' }],
+        rearPorts: [{ label: 'UPLINK0', type: 'SFP' }, { label: 'UPLINK1', type: 'SFP' }, { label: 'MGMT', type: 'MGMT' }, { label: 'PSU1', type: 'PWR' }, { label: 'PSU2', type: 'PWR' }]
+    }
+];
+
+// --- Phase 3: Asset Instance Store ---
+let assetStore = [];
+let nextAssetId = 1;
+
+// --- Phase 3: Connection Store ---
+let connectionStore = [];
+let nextConnId = 1;
 
 class ModbusWrapper {
     constructor(ip, port = 502) {
@@ -305,6 +390,57 @@ function alertManager(state) {
         }
     });
 }
+
+// --- Phase 3: Asset & Model REST API ---
+app.get('/api/models', (req, res) => res.json(modelLibrary));
+app.get('/api/assets', (req, res) => res.json(assetStore));
+app.post('/api/assets', (req, res) => {
+    const asset = { assetId: nextAssetId++, ...req.body, status: req.body.status || 'Active' };
+    assetStore.push(asset);
+    io.emit('assets:update', assetStore);
+    res.status(201).json(asset);
+});
+app.put('/api/assets/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const idx = assetStore.findIndex(a => a.assetId === id);
+    if (idx === -1) return res.status(404).json({ error: 'Asset not found' });
+    assetStore[idx] = { ...assetStore[idx], ...req.body, assetId: id };
+    io.emit('assets:update', assetStore);
+    res.json(assetStore[idx]);
+});
+app.delete('/api/assets/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    // Also remove connections for this asset
+    connectionStore = connectionStore.filter(c => c.srcAssetId !== id && c.dstAssetId !== id);
+    assetStore = assetStore.filter(a => a.assetId !== id);
+    io.emit('assets:update', assetStore);
+    io.emit('connections:update', connectionStore);
+    res.sendStatus(200);
+});
+
+// --- Phase 3: Connection REST API ---
+app.get('/api/connections', (req, res) => res.json(connectionStore));
+app.post('/api/connections', (req, res) => {
+    const { srcAssetId, srcPortLabel, dstAssetId, dstPortLabel, cableType, color, label } = req.body;
+    // Validate port not already connected
+    const portInUse = connectionStore.find(c =>
+        (c.srcAssetId === srcAssetId && c.srcPortLabel === srcPortLabel) ||
+        (c.dstAssetId === srcAssetId && c.dstPortLabel === srcPortLabel) ||
+        (c.srcAssetId === dstAssetId && c.srcPortLabel === dstPortLabel) ||
+        (c.dstAssetId === dstAssetId && c.dstPortLabel === dstPortLabel)
+    );
+    if (portInUse) return res.status(409).json({ error: 'Port already connected' });
+    const conn = { connectionId: nextConnId++, srcAssetId, srcPortLabel, dstAssetId, dstPortLabel,
+                   cableType: cableType || 'copper', color: color || '#06b6d4', label: label || '' };
+    connectionStore.push(conn);
+    io.emit('connections:update', connectionStore);
+    res.status(201).json(conn);
+});
+app.delete('/api/connections/:id', (req, res) => {
+    connectionStore = connectionStore.filter(c => c.connectionId !== parseInt(req.params.id));
+    io.emit('connections:update', connectionStore);
+    res.sendStatus(200);
+});
 
 // Mock Test Endpoints
 app.post('/api/simulate/fire', (req, res) => {

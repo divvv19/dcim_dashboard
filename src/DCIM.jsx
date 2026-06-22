@@ -1,11 +1,19 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
     Thermometer, Wind, Zap, Droplets, DoorOpen, AlertTriangle,
     Activity, Server, Fan, Battery, Plug, Flame, Settings,
-    Clock, CheckCircle2, ArrowRight, Home, Menu, Download, Maximize, Minimize, ArrowUp, ArrowDown, Info, Check, Cloud, Sun, Wifi, WifiOff
+    Clock, CheckCircle2, ArrowRight, Home, Menu, Download, Maximize, Minimize, ArrowUp, ArrowDown, Info, Check, Cloud, Sun, Wifi, WifiOff,
+    Search, Link, X, Eye, Edit3, Save, Cable, Layers
 } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useRealtimeData } from './hooks/useRealtimeData';
+
+// --- Phase 3: Constants ---
+const portColorMap = {
+    ETH: 'bg-cyan-500', PWR: 'bg-orange-500', FC: 'bg-purple-500',
+    SFP: 'bg-green-500', MGMT: 'bg-yellow-500', USB: 'bg-slate-400',
+};
+const iconMap = { Server, Activity, Battery, Plug, Fan, Zap, Layers };
 
 // --- COMPONENT LIBRARY ---
 
@@ -514,72 +522,215 @@ const PDUView = ({ data, historyData }) => {
     );
 };
 
-// --- RACK DESIGNER VIEW ---
-const RackDesignerView = ({ rackItems, handleDrop, handleRemove, handleDragStart, assetLibrary, totalPower, totalWeight, totalU }) => {
+// --- Phase 3: ASSET METADATA DRAWER ---
+const AssetDrawer = ({ asset, model, onClose, onSave }) => {
+    const [form, setForm] = useState({
+        name: asset?.name || '', serialNumber: asset?.serialNumber || '', assetTag: asset?.assetTag || '',
+        ipAddress: asset?.ipAddress || '', owner: asset?.owner || '', notes: asset?.notes || '', status: asset?.status || 'Active'
+    });
+    const statusColors = { Active: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30', Spare: 'bg-blue-500/20 text-blue-400 border-blue-500/30', Decommissioned: 'bg-slate-500/20 text-slate-400 border-slate-600/30' };
+
+    if (!asset || !model) return null;
+    const handleSave = () => {
+        fetch(`http://localhost:5000/api/assets/${asset.assetId}`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form)
+        }).then(r => r.json()).then(() => { onSave && onSave(); }).catch(() => {});
+    };
+
+    return (
+        <div className="fixed right-0 top-0 bottom-0 w-96 z-[60] bg-slate-900/95 backdrop-blur-xl border-l border-slate-700 shadow-2xl flex flex-col animate-slide-in">
+            <div className="p-4 border-b border-slate-700 flex items-center justify-between">
+                <div>
+                    <div className="text-sm font-bold text-slate-200">{model.manufacturer} {model.modelName}</div>
+                    <div className="text-[10px] text-slate-400">{model.heightU}U | {model.maxPowerW}W | {model.weight}kg</div>
+                </div>
+                <button onClick={onClose} className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"><X size={18} /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3">
+                <div className="flex gap-2 mb-3">
+                    {['Active', 'Spare', 'Decommissioned'].map(s => (
+                        <button key={s} onClick={() => setForm(f => ({ ...f, status: s }))}
+                            className={`px-3 py-1 rounded-full text-[10px] font-bold border ${form.status === s ? statusColors[s] : 'bg-slate-800 text-slate-500 border-slate-700'} transition-colors`}>{s}</button>
+                    ))}
+                </div>
+                {[{ key: 'name', label: 'Asset Name', icon: Edit3 }, { key: 'serialNumber', label: 'Serial Number', icon: Info }, { key: 'assetTag', label: 'Asset Tag', icon: Info },
+                  { key: 'ipAddress', label: 'IP Address', icon: Wifi }, { key: 'owner', label: 'Owner', icon: Info }].map(({ key, label, icon: Ic }) => (
+                    <div key={key}>
+                        <label className="text-[10px] text-slate-500 uppercase font-semibold flex items-center gap-1"><Ic size={10} /> {label}</label>
+                        <input value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:border-cyan-500 focus:outline-none transition-colors mt-1" />
+                    </div>
+                ))}
+                <div>
+                    <label className="text-[10px] text-slate-500 uppercase font-semibold">Notes</label>
+                    <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:border-cyan-500 focus:outline-none transition-colors mt-1" />
+                </div>
+                <div className="border-t border-slate-700/50 pt-3 mt-3">
+                    <div className="text-[10px] text-slate-500 uppercase font-semibold mb-2">Front Ports ({model.frontPorts?.length || 0})</div>
+                    <div className="flex flex-wrap gap-1">{(model.frontPorts || []).map((p, i) => (
+                        <span key={i} className={`text-[9px] px-2 py-0.5 rounded ${portColorMap[p.type] || 'bg-slate-600'} text-white font-mono`}>{p.label}</span>
+                    ))}</div>
+                </div>
+                <div>
+                    <div className="text-[10px] text-slate-500 uppercase font-semibold mb-2">Rear Ports ({model.rearPorts?.length || 0})</div>
+                    <div className="flex flex-wrap gap-1">{(model.rearPorts || []).map((p, i) => (
+                        <span key={i} className={`text-[9px] px-2 py-0.5 rounded ${portColorMap[p.type] || 'bg-slate-600'} text-white font-mono`}>{p.label}</span>
+                    ))}</div>
+                </div>
+            </div>
+            <div className="p-4 border-t border-slate-700">
+                <button onClick={handleSave} className="w-full flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white py-2 rounded-lg font-semibold text-sm transition-colors">
+                    <Save size={16} /> Save Changes
+                </button>
+            </div>
+        </div>
+    );
+};
+
+// --- RACK DESIGNER VIEW (Phase 3 Upgrade) ---
+const RackDesignerView = ({ rackItems, handleDrop, handleRemove, handleDragStart, modelLibrary, totalPower, totalWeight, totalU, onSelectAsset, connections, onPortClick, connectMode, tracedConnection, onDeleteConnection, onTraceConnection, showToast }) => {
+    const [rackFace, setRackFace] = useState('front');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterType, setFilterType] = useState('all');
+
+    const filteredModels = useMemo(() => {
+        return modelLibrary.filter(m => {
+            const matchesSearch = m.modelName.toLowerCase().includes(searchTerm.toLowerCase()) || m.manufacturer.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesType = filterType === 'all' || m.deviceType === filterType;
+            return matchesSearch && matchesType;
+        });
+    }, [modelLibrary, searchTerm, filterType]);
+
+    const isPortConnected = useCallback((assetId, portLabel) => {
+        return connections.some(c =>
+            (c.srcAssetId === assetId && c.srcPortLabel === portLabel) ||
+            (c.dstAssetId === assetId && c.dstPortLabel === portLabel)
+        );
+    }, [connections]);
+
+    const isTracedPort = useCallback((assetId, portLabel) => {
+        if (!tracedConnection) return false;
+        const conn = connections.find(c => c.connectionId === tracedConnection);
+        if (!conn) return false;
+        return (conn.srcAssetId === assetId && conn.srcPortLabel === portLabel) ||
+               (conn.dstAssetId === assetId && conn.dstPortLabel === portLabel);
+    }, [tracedConnection, connections]);
+
+    const getAssetName = useCallback((assetId) => {
+        const slot = rackItems.find(i => i && i.assetId === assetId && i.type === 'anchor');
+        return slot?.name || `Asset #${assetId}`;
+    }, [rackItems]);
+
+    const filterTabs = [{ key: 'all', label: 'All' }, { key: 'server', label: 'Servers' }, { key: 'network', label: 'Network' }, { key: 'power', label: 'Power' }, { key: 'storage', label: 'Storage' }];
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full content-start">
-            <Card title="Available Assets" className="lg:col-span-3 h-full">
+            {/* Asset Catalog */}
+            <Card title="Asset Catalog" className="lg:col-span-3 h-full">
                 <div className="space-y-3">
-                    {assetLibrary.map(asset => (
-                        <div
-                            key={asset.id}
-                            draggable
-                            onDragStart={(e) => handleDragStart(e, asset)}
-                            className={`p-3 rounded-lg border border-slate-700 bg-slate-800/50 cursor-grab active:cursor-grabbing hover:bg-slate-700 transition flex items-center justify-between group`}
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded flex items-center justify-center ${asset.color} text-white shadow-lg`}>
-                                    <asset.icon size={20} />
+                    <div className="relative">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+                            placeholder="Search models..."
+                            className="w-full bg-slate-900/80 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-200 focus:border-cyan-500 focus:outline-none transition-colors" />
+                    </div>
+                    <div className="flex gap-1 flex-wrap">
+                        {filterTabs.map(t => (
+                            <button key={t.key} onClick={() => setFilterType(t.key)}
+                                className={`px-2 py-1 rounded text-[10px] font-semibold transition-colors ${filterType === t.key ? 'bg-cyan-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}>{t.label}</button>
+                        ))}
+                    </div>
+                    <div className="space-y-2 max-h-[500px] overflow-y-auto custom-scrollbar">
+                        {filteredModels.map(model => {
+                            const IconComp = iconMap[model.icon] || Server;
+                            return (
+                                <div key={model.modelId} draggable onDragStart={(e) => handleDragStart(e, model)}
+                                    className="p-3 rounded-lg border border-slate-700 bg-slate-800/50 cursor-grab active:cursor-grabbing hover:bg-slate-700 transition group">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-10 h-10 rounded flex items-center justify-center ${model.color} text-white shadow-lg shrink-0`}>
+                                            <IconComp size={20} />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <div className="text-xs font-bold text-slate-200 truncate">{model.manufacturer} {model.modelName}</div>
+                                            <div className="text-[10px] text-slate-400">{model.heightU}U | {model.maxPowerW}W | {model.weight}kg</div>
+                                            <div className="text-[9px] text-slate-500 mt-0.5">
+                                                F:{model.frontPorts?.length || 0} R:{model.rearPorts?.length || 0} ports
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div className="text-sm font-bold text-slate-200">{asset.name}</div>
-                                    <div className="text-[10px] text-slate-400">{asset.u}U | {asset.power}kW | {asset.weight}kg</div>
-                                </div>
-                            </div>
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                <div className="w-6 h-6 rounded bg-slate-600 flex items-center justify-center text-xs">+</div>
-                            </div>
-                        </div>
-                    ))}
+                            );
+                        })}
+                        {filteredModels.length === 0 && <div className="text-slate-500 text-xs text-center py-4">No models found</div>}
+                    </div>
                 </div>
             </Card>
 
-            <Card title="Server Rack 01 (42U)" className="lg:col-span-6 min-h-[800px] flex justify-center bg-slate-900">
-                <div className="w-full max-w-md bg-black border-x-4 border-slate-700 relative p-1 shadow-2xl">
+            {/* Rack Elevation */}
+            <Card title={`Server Rack 01 (42U) — ${rackFace === 'front' ? 'Front' : 'Rear'}`} className="lg:col-span-6 min-h-[800px] flex flex-col bg-slate-900">
+                <div className="flex justify-center gap-2 mb-3">
+                    <button onClick={() => setRackFace('front')}
+                        className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${rackFace === 'front' ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}>
+                        <Eye size={12} className="inline mr-1.5" />Front
+                    </button>
+                    <button onClick={() => setRackFace('rear')}
+                        className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${rackFace === 'rear' ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}>
+                        <Layers size={12} className="inline mr-1.5" />Rear
+                    </button>
+                </div>
+                {connectMode && (
+                    <div className="mb-2 p-2 bg-yellow-900/30 border border-yellow-500/30 rounded-lg text-xs text-yellow-300 flex items-center gap-2">
+                        <Cable size={14} className="animate-pulse" /> Connect mode: click destination port or press Esc to cancel.
+                    </div>
+                )}
+                <div className="w-full max-w-md mx-auto bg-black border-x-4 border-slate-700 relative p-1 shadow-2xl flex-1">
                     <div className="absolute left-0 top-0 bottom-0 w-4 bg-slate-800 border-r border-slate-600/50 flex flex-col justify-around py-2">
                         {Array(42).fill(0).map((_, i) => <div key={i} className="text-[8px] text-slate-500 text-center font-mono">{42 - i}</div>)}
                     </div>
                     <div className="absolute right-0 top-0 bottom-0 w-4 bg-slate-800 border-l border-slate-600/50 flex flex-col justify-around py-2">
                         {Array(42).fill(0).map((_, i) => <div key={i} className="text-[8px] text-slate-500 text-center font-mono">{42 - i}</div>)}
                     </div>
-
                     <div className="mx-6 flex flex-col h-full border-x border-dashed border-slate-800/50">
                         {Array(42).fill(null).map((_, i) => {
                             const uIndex = 41 - i;
                             const item = rackItems[uIndex];
                             const onDragOver = (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; e.currentTarget.classList.add('bg-cyan-500/20'); };
                             const onDragLeave = (e) => { e.currentTarget.classList.remove('bg-cyan-500/20'); };
-                            const onDrop = (e) => { e.preventDefault(); e.currentTarget.classList.remove('bg-cyan-500/20'); handleDrop(uIndex); };
+                            const onDropSlot = (e) => { e.preventDefault(); e.currentTarget.classList.remove('bg-cyan-500/20'); handleDrop(uIndex); };
                             const isAnchor = item && item.type === 'anchor';
+                            const IconComp = item ? (iconMap[item.icon] || Server) : null;
+
+                            // Get ports for current face
+                            const ports = isAnchor ? (rackFace === 'front' ? (item.frontPorts || []) : [...(item.rearPorts || [])].reverse()) : [];
 
                             return (
-                                <div
-                                    key={uIndex}
+                                <div key={uIndex}
                                     className={`h-[1.75rem] border-b border-slate-800 relative group transition-colors flex items-center justify-center text-[9px] text-slate-700 select-none ${!item ? 'hover:bg-slate-800' : ''}`}
                                     onDragOver={!item ? onDragOver : undefined}
                                     onDragLeave={!item ? onDragLeave : undefined}
-                                    onDrop={!item ? onDrop : undefined}
-                                    onContextMenu={(e) => { e.preventDefault(); handleRemove(uIndex); }}
-                                >
+                                    onDrop={!item ? onDropSlot : undefined}
+                                    onContextMenu={(e) => { e.preventDefault(); handleRemove(uIndex); }}>
                                     {!item && <span>Slot {uIndex + 1}</span>}
                                     {isAnchor && (
-                                        <div
-                                            className={`absolute top-0 left-0 right-0 z-10 m-[1px] rounded shadow-lg flex items-center px-4 gap-3 ${item.color} border-t border-white/20`}
-                                            style={{ height: `calc(${item.u * 1.75}rem - 2px)` }}
-                                        >
-                                            <item.icon size={16} className="text-white/80" />
-                                            <span className="font-bold text-white text-xs truncate">{item.name}</span>
-                                            <div className="ml-auto text-[9px] text-white/50">{item.power}kW</div>
+                                        <div onClick={() => onSelectAsset && onSelectAsset(item)}
+                                            className={`absolute top-0 left-0 right-0 z-10 m-[1px] rounded shadow-lg flex items-center px-2 gap-1 ${item.color} border-t border-white/20 cursor-pointer hover:brightness-110 transition-all`}
+                                            style={{ height: `calc(${item.heightU * 1.75}rem - 2px)` }}>
+                                            {IconComp && <IconComp size={12} className="text-white/80 shrink-0" />}
+                                            <span className="font-bold text-white text-[9px] truncate">{item.name}</span>
+                                            <div className="flex gap-[2px] ml-auto shrink-0">
+                                                {ports.slice(0, 8).map((port, pi) => (
+                                                    <div key={pi}
+                                                        onClick={(e) => { e.stopPropagation(); onPortClick && onPortClick(item.assetId, port.label, port.type); }}
+                                                        className={`w-2.5 h-2.5 rounded-sm border cursor-pointer transition-all
+                                                            ${portColorMap[port.type] || 'bg-slate-600'} border-white/20 hover:scale-150 hover:z-20
+                                                            ${isPortConnected(item.assetId, port.label) ? 'ring-1 ring-cyan-400 ring-offset-1 ring-offset-slate-900' : ''}
+                                                            ${connectMode?.assetId === item.assetId && connectMode?.portLabel === port.label ? 'ring-2 ring-yellow-400 animate-pulse' : ''}
+                                                            ${isTracedPort(item.assetId, port.label) ? 'ring-2 ring-emerald-400 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]' : ''}`}
+                                                        title={`${port.label} (${port.type})`} />
+                                                ))}
+                                                {ports.length > 8 && <span className="text-[7px] text-white/40">+{ports.length - 8}</span>}
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -589,28 +740,68 @@ const RackDesignerView = ({ rackItems, handleDrop, handleRemove, handleDragStart
                 </div>
             </Card>
 
-            <Card title="Rack Metrics" className="lg:col-span-3 h-full">
-                <div className="space-y-6">
-                    <div className="text-center">
-                        <div className="text-sm text-slate-400 mb-2">Total Power Load</div>
-                        <CircularGauge value={(totalPower / 12 * 100).toFixed(1)} label={`${totalPower} / 12 kW`} color="text-cyan-400" strokeColor="stroke-cyan-500" size="w-32 h-32" />
-                    </div>
-                    <div className="space-y-4 px-4">
-                        <div>
-                            <div className="flex justify-between text-xs mb-1 text-slate-400"><span>Weight (Max 1000kg)</span><span>{totalWeight} kg</span></div>
-                            <div className="h-2 bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-blue-500 transition-all duration-500" style={{ width: `${totalWeight / 1000 * 100}%` }}></div></div>
+            {/* Rack Metrics + Connections */}
+            <div className="lg:col-span-3 space-y-4">
+                <Card title="Rack Metrics" className="h-auto">
+                    <div className="space-y-6">
+                        <div className="text-center">
+                            <div className="text-sm text-slate-400 mb-2">Total Power Load</div>
+                            <CircularGauge value={(totalPower / 12 * 100).toFixed(1)} label={`${totalPower} / 12 kW`} color="text-cyan-400" strokeColor="stroke-cyan-500" size="w-32 h-32" />
                         </div>
-                        <div>
-                            <div className="flex justify-between text-xs mb-1 text-slate-400"><span>U-Space Used</span><span>{totalU} / 42 U</span></div>
-                            <div className="h-2 bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${totalU / 42 * 100}%` }}></div></div>
+                        <div className="space-y-4 px-4">
+                            <div>
+                                <div className="flex justify-between text-xs mb-1 text-slate-400"><span>Weight (Max 1000kg)</span><span>{totalWeight} kg</span></div>
+                                <div className="h-2 bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-blue-500 transition-all duration-500" style={{ width: `${totalWeight / 1000 * 100}%` }}></div></div>
+                            </div>
+                            <div>
+                                <div className="flex justify-between text-xs mb-1 text-slate-400"><span>U-Space Used</span><span>{totalU} / 42 U</span></div>
+                                <div className="h-2 bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${totalU / 42 * 100}%` }}></div></div>
+                            </div>
+                        </div>
+                        <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700/50 text-xs text-slate-400 leading-relaxed">
+                            <div className="flex gap-2 mb-2"><Info size={14} className="text-cyan-400 shrink-0" /> <span>Drag assets from catalog.</span></div>
+                            <div className="flex gap-2 mb-2"><ArrowDown size={14} className="text-red-400 shrink-0" /> <span>Right-click to remove.</span></div>
+                            <div className="flex gap-2"><Cable size={14} className="text-yellow-400 shrink-0" /> <span>Click ports to connect.</span></div>
+                        </div>
+                        {/* Port Legend */}
+                        <div className="space-y-1">
+                            <div className="text-[10px] text-slate-500 uppercase font-semibold mb-2">Port Types</div>
+                            {Object.entries(portColorMap).map(([type, color]) => (
+                                <div key={type} className="flex items-center gap-2 text-xs text-slate-400">
+                                    <div className={`w-3 h-3 rounded-sm ${color}`}></div>
+                                    {type}
+                                </div>
+                            ))}
                         </div>
                     </div>
-                    <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700/50 text-xs text-slate-400 leading-relaxed">
-                        <div className="flex gap-2 mb-2"><Info size={14} className="text-cyan-400 shrink-0" /> <span>Tip: Drag assets from left library.</span></div>
-                        <div className="flex gap-2"><ArrowDown size={14} className="text-red-400 shrink-0" /> <span>Right-click asset to remove.</span></div>
-                    </div>
-                </div>
-            </Card>
+                </Card>
+
+                {/* Connections Panel */}
+                <Card title={`Connections (${connections.length})`} className="h-auto">
+                    {connections.length === 0 ? (
+                        <div className="text-slate-500 text-sm text-center py-4">No connections yet.<br /><span className="text-[10px]">Click a port to start.</span></div>
+                    ) : (
+                        <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
+                            {connections.map(conn => (
+                                <div key={conn.connectionId} className={`flex items-center gap-2 p-2 bg-slate-900/50 rounded-lg border transition-all ${tracedConnection === conn.connectionId ? 'border-emerald-500/50 bg-emerald-900/20' : 'border-slate-700/30'}`}>
+                                    <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: conn.color }}></div>
+                                    <div className="flex-1 text-[10px] min-w-0">
+                                        <span className="text-cyan-400">{getAssetName(conn.srcAssetId)}</span>
+                                        <span className="text-slate-500">:{conn.srcPortLabel}</span>
+                                        <span className="text-slate-600 mx-1">→</span>
+                                        <span className="text-cyan-400">{getAssetName(conn.dstAssetId)}</span>
+                                        <span className="text-slate-500">:{conn.dstPortLabel}</span>
+                                    </div>
+                                    <button onClick={() => onTraceConnection(conn.connectionId)}
+                                        className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-900/30 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-900/50 shrink-0">Trace</button>
+                                    <button onClick={() => onDeleteConnection(conn.connectionId)}
+                                        className="text-[9px] px-1.5 py-0.5 rounded bg-red-900/30 text-red-400 border border-red-500/20 hover:bg-red-900/50 shrink-0">×</button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </Card>
+            </div>
         </div>
     );
 };
@@ -774,68 +965,121 @@ export default function DCIM() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
-    // --- RACK DESIGNER LOGIC ---
+    // --- RACK DESIGNER LOGIC (Phase 3 Upgrade) ---
     const [rackItems, setRackItems] = useState(Array(42).fill(null));
     const [draggedAsset, setDraggedAsset] = useState(null);
+    const [modelLibrary, setModelLibrary] = useState([]);
+    const [selectedAsset, setSelectedAsset] = useState(null);
+    const [connections, setConnections] = useState([]);
+    const [connectMode, setConnectMode] = useState(null);
+    const [tracedConnection, setTracedConnection] = useState(null);
 
-    const assetLibrary = [
-        { id: 'srv-1u', name: 'Server 1U', u: 1, power: 0.4, weight: 15, color: 'bg-blue-600', icon: Server },
-        { id: 'srv-2u', name: 'Server 2U', u: 2, power: 0.8, weight: 28, color: 'bg-blue-700', icon: Server },
-        { id: 'srv-4u', name: 'Blade Chassis 4U', u: 4, power: 2.5, weight: 80, color: 'bg-slate-700', icon: Server },
-        { id: 'ups-2u', name: 'UPS 2U', u: 2, power: 0.1, weight: 35, color: 'bg-orange-600', icon: Battery },
-        { id: 'sw-1u', name: 'Switch 1U', u: 1, power: 0.15, weight: 5, color: 'bg-cyan-600', icon: Activity },
-    ];
+    // Fetch model library from backend
+    useEffect(() => {
+        fetch('http://localhost:5000/api/models').then(r => r.json()).then(setModelLibrary).catch(() => {});
+        fetch('http://localhost:5000/api/connections').then(r => r.json()).then(setConnections).catch(() => {});
+    }, []);
 
-    const handleDragStart = (e, asset) => {
-        setDraggedAsset(asset);
+    // Listen for connection updates via socket
+    useEffect(() => {
+        const handler = (e) => setConnections(e.detail);
+        window.addEventListener('connections-update', handler);
+        return () => window.removeEventListener('connections-update', handler);
+    }, []);
+
+    // Escape key cancels connect mode
+    useEffect(() => {
+        const handler = (e) => { if (e.key === 'Escape') setConnectMode(null); };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    }, []);
+
+    const handleDragStart = (e, model) => {
+        setDraggedAsset(model);
         e.dataTransfer.effectAllowed = 'copy';
     };
 
-    const handleDrop = (index) => {
+    const handleDrop = async (index) => {
         if (!draggedAsset) return;
+        const u = draggedAsset.heightU;
+        if (index + 1 < u) return;
 
-        // Check bounds (don't overflow top)
-        if (index + 1 < draggedAsset.u) return;
-
-        // Check collision
         let collision = false;
-        for (let i = 0; i < draggedAsset.u; i++) {
-            if (rackItems[index - i]) collision = true;
-        }
-        if (collision) {
-            showToast("Not enough space!", "error");
-            return;
-        }
+        for (let i = 0; i < u; i++) { if (rackItems[index - i]) collision = true; }
+        if (collision) { showToast("Not enough space!", "error"); return; }
 
-        const newRack = [...rackItems];
-        for (let i = 0; i < draggedAsset.u; i++) {
-            newRack[index - i] = { ...draggedAsset, type: i === 0 ? 'anchor' : 'filled', anchorId: index };
-        }
+        try {
+            const res = await fetch('http://localhost:5000/api/assets', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ modelId: draggedAsset.modelId, name: `${draggedAsset.manufacturer} ${draggedAsset.modelName}`, rackSlotU: index })
+            });
+            const asset = await res.json();
 
-        setRackItems(newRack);
+            const newRack = [...rackItems];
+            for (let i = 0; i < u; i++) {
+                newRack[index - i] = {
+                    ...draggedAsset, assetId: asset.assetId, name: asset.name,
+                    type: i === 0 ? 'anchor' : 'filled', anchorId: index
+                };
+            }
+            setRackItems(newRack);
+        } catch { showToast("Backend unreachable.", "error"); }
         setDraggedAsset(null);
     };
 
-    const handleRemove = (index) => {
+    const handleRemove = async (index) => {
         const item = rackItems[index];
         if (!item) return;
-
-        const newRack = [...rackItems];
         const anchorIndex = item.type === 'anchor' ? index : item.anchorId;
-        const anchorItem = newRack[anchorIndex];
-
+        const anchorItem = rackItems[anchorIndex];
         if (!anchorItem) return;
 
-        for (let i = 0; i < anchorItem.u; i++) {
-            newRack[anchorIndex - i] = null;
+        if (anchorItem.assetId) {
+            try { await fetch(`http://localhost:5000/api/assets/${anchorItem.assetId}`, { method: 'DELETE' }); } catch {}
         }
+        const newRack = [...rackItems];
+        for (let i = 0; i < anchorItem.heightU; i++) { newRack[anchorIndex - i] = null; }
         setRackItems(newRack);
-    }
+        if (selectedAsset?.assetId === anchorItem.assetId) setSelectedAsset(null);
+    };
+
+    const handlePortClick = (assetId, portLabel, portType) => {
+        if (!connectMode) {
+            setConnectMode({ assetId, portLabel, portType });
+            showToast(`Source: ${portLabel} selected. Click destination port.`, 'info');
+        } else {
+            if (connectMode.assetId === assetId && connectMode.portLabel === portLabel) {
+                setConnectMode(null); return;
+            }
+            fetch('http://localhost:5000/api/connections', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ srcAssetId: connectMode.assetId, srcPortLabel: connectMode.portLabel, dstAssetId: assetId, dstPortLabel: portLabel, cableType: connectMode.portType === 'PWR' ? 'power' : 'copper' })
+            }).then(r => { if (!r.ok) throw new Error(); return r.json(); })
+              .then(conn => { setConnections(prev => [...prev, conn]); showToast('Connection created!', 'success'); setConnectMode(null); })
+              .catch(() => { showToast('Port already connected or error.', 'error'); setConnectMode(null); });
+        }
+    };
+
+    const handleDeleteConnection = (connId) => {
+        fetch(`http://localhost:5000/api/connections/${connId}`, { method: 'DELETE' })
+            .then(() => setConnections(prev => prev.filter(c => c.connectionId !== connId)))
+            .catch(() => {});
+    };
+
+    const handleTraceConnection = (connId) => {
+        setTracedConnection(connId);
+        setTimeout(() => setTracedConnection(null), 3000);
+    };
+
+    const handleSelectAsset = (item) => {
+        const model = modelLibrary.find(m => m.modelId === item.modelId);
+        setSelectedAsset({ ...item, model });
+    };
 
     const placedAssets = rackItems.filter(i => i && i.type === 'anchor');
-    const totalPower = placedAssets.reduce((acc, curr) => acc + curr.power, 0).toFixed(2);
-    const totalWeight = placedAssets.reduce((acc, curr) => acc + curr.weight, 0);
-    const totalU = placedAssets.reduce((acc, curr) => acc + curr.u, 0);
+    const totalPower = placedAssets.reduce((acc, curr) => acc + (curr.maxPowerW || 0) / 1000, 0).toFixed(2);
+    const totalWeight = placedAssets.reduce((acc, curr) => acc + (curr.weight || 0), 0);
+    const totalU = placedAssets.reduce((acc, curr) => acc + (curr.heightU || 0), 0);
 
     return (
         <div className={`min-h-screen transition-colors duration-500 font-sans text-slate-200 flex ${envData.fireStatus === 'Alarm' ? 'bg-red-950' : 'bg-[#0b1120]'}`}>
@@ -932,12 +1176,30 @@ export default function DCIM() {
                         handleDrop={handleDrop}
                         handleRemove={handleRemove}
                         handleDragStart={handleDragStart}
-                        assetLibrary={assetLibrary}
+                        modelLibrary={modelLibrary}
                         totalPower={totalPower}
                         totalWeight={totalWeight}
                         totalU={totalU}
+                        onSelectAsset={handleSelectAsset}
+                        connections={connections}
+                        onPortClick={handlePortClick}
+                        connectMode={connectMode}
+                        tracedConnection={tracedConnection}
+                        onDeleteConnection={handleDeleteConnection}
+                        onTraceConnection={handleTraceConnection}
+                        showToast={showToast}
                     />}
                 </div>
+
+                {/* Asset Drawer */}
+                {selectedAsset && (
+                    <AssetDrawer
+                        asset={selectedAsset}
+                        model={selectedAsset.model || modelLibrary.find(m => m.modelId === selectedAsset.modelId)}
+                        onClose={() => setSelectedAsset(null)}
+                        onSave={() => { showToast('Asset saved!', 'success'); setSelectedAsset(null); }}
+                    />
+                )}
 
                 {/* Footer */}
                 <div className="h-8 border-t border-slate-800 bg-slate-900/80 backdrop-blur-md flex justify-between items-center px-4 lg:px-8 text-[10px] lg:text-xs text-slate-500 shrink-0">

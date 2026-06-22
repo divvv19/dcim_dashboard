@@ -37,6 +37,14 @@ export const useRealtimeData = (initialState) => {
             window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: alert.message, type: alert.severity } }));
         });
 
+        // Phase 3: Asset & Connection real-time sync
+        socket.on('assets:update', (assets) => {
+            window.dispatchEvent(new CustomEvent('assets-update', { detail: assets }));
+        });
+        socket.on('connections:update', (conns) => {
+            window.dispatchEvent(new CustomEvent('connections-update', { detail: conns }));
+        });
+
         // Re-request history every 60 seconds for fresh chart data
         const historyInterval = setInterval(() => {
             if (socket.connected) {
